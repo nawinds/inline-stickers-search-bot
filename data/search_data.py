@@ -8,5 +8,3 @@ class SearchData(SqlAlchemyBase):
     sticker_id = sqlalchemy.Column(sqlalchemy.Integer)
     keyword = sqlalchemy.Column(sqlalchemy.String, index=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer)
-    use = sqlalchemy.Column(sqlalchemy.Float)
-    sticker_count = sqlalchemy.Column(sqlalchemy.Integer)
