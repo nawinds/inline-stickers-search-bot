@@ -1,4 +1,8 @@
 import logging
+import re
+from os import getenv
+from time import time
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
@@ -7,18 +11,16 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineQuery, ChosenInlineResult, InlineQueryResultCachedSticker, ChatActions
 from aiogram.utils import executor
 from aiogram.utils.exceptions import InvalidQueryID
-from search import Search, clear_q
+
+from data.db_session import create_session, global_init
 from data.search_data import SearchData
 from data.sticker_sets import StickerSet
-from data.sticker_sets_data import StickerSetsData
 from data.stickers import Sticker
-from data.db_session import create_session, global_init
-from time import time
-import re
+from search import Search, clear_q
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token='6243367959:AAGSqfPJBw4LxF37N_kD--NiVk4HR3znLSg')
+bot = Bot(token=getenv("TOKEN"))
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
@@ -93,11 +95,6 @@ async def callback_add_set(callback: types.CallbackQuery):
         return
     await callback.answer("Adding the set...")
     await bot.send_chat_action(callback.from_user.id, ChatActions.TYPING)
-    sticker_ids_list = session.query(StickerSetsData.sticker_unique_id) \
-        .filter(StickerSetsData.set_id == set_id).all()
-    stickers_list = [session.query(SearchData).filter(SearchData.user_id == set.owner_id,
-                                                      SearchData.sticker_unique_id == s).first()
-                     for s in sticker_ids_list]
 
 
 
@@ -133,7 +130,7 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
         session.commit()
     for p in prompts:
         session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
-    session.add(StickerSetsData(set_id=data.get("set_id"), sticker_unique_id=sticker_unique_id))
+    #session.add(StickerSetsData(set_id=data.get("set_id"), sticker_unique_id=sticker_unique_id))
     session.commit()
     await state.update_data(prompts=[])
     await message.reply("Sticker saved. Now send another sticker. If you don't want "

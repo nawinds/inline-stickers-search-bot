@@ -8,4 +8,5 @@ class Sticker(SqlAlchemyBase):
     sticker_unique_id = sqlalchemy.Column(sqlalchemy.String, primary_key=True,
                                           unique=True, index=True)
     sticker_file_id = sqlalchemy.Column(sqlalchemy.String)
+
     search_data = relationship("SearchData", back_populates="sticker")
