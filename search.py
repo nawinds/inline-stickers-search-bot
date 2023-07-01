@@ -41,16 +41,15 @@ class Search:
                 if corrected in self.known_words:
                     res.append(corrected)
                 else:
-                    if 97 <= any([ord(i) for i in word]) <= 122:
+                    if any([97 <= ord(i) <= 122 for i in word]):
                         fixed_lang = clear_q(self.en_to_ru_keyboard(orig_word))
-                    elif 1072 <= any([ord(i) for i in word]) <= 1103:
+                    elif any([1072 <= ord(i) <= 1103 for i in word]):
                         fixed_lang = clear_q(self.ru_to_en_keyboard(orig_word))
                     else:
                         fixed_lang = word
                     if fixed_lang in self.known_words:
                         res.append(fixed_lang)
                     else:
-                        print(12)
                         res.append(self.correct_word(fixed_lang))
         return " ".join(res) if res else None
 
@@ -86,15 +85,16 @@ class Search:
         return corrected_word
 
     def search_list(self):
-        if self.corrected_q:
+        corrected_q = self.corrected_q
+        if corrected_q:
             return list(zip(
-                [self.q, self.corrected_q] + self.q.split() + self.corrected_q.split(),
-                [len(self.q.split()), len(self.corrected_q.split()) / 2] +
-                [1] * len(self.q) + [0.5] * len(self.corrected_q)
+                [self.q, corrected_q] + self.q.split() + corrected_q.split(),
+                [len(self.q.split()), len(corrected_q.split()) / 2] +
+                [1] * len(self.q.split()) + [0.5] * len(corrected_q.split())
             ))
         return list(zip(
             [self.q] + self.q.split(),
-            [len(self.q.split())] + [1] * len(self.q)
+            [len(self.q.split())] + [1] * len(self.q.split())
         ))
 
     def search_term(self, term, k=1):
@@ -102,9 +102,10 @@ class Search:
         session = create_session()
         found = session.query(SearchData).filter(SearchData.user_id == self.uid,
                                                  SearchData.keyword.like(f"%{term}%")).all()
-        return [(res.sticker_id, res.use / 20 +
+        return [(res.sticker.sticker_file_id,
                  k * self.similarity_rate(term, res.keyword) /
-                 len(session.query(SearchData).filter(SearchData.sticker_id == res.sticker_id).all()))
+                 len(session.query(SearchData).filter(
+                     SearchData.sticker_unique_id == res.sticker_unique_id).all()))
                 for res in found]
 
     def search_and_range(self):
@@ -117,12 +118,12 @@ class Search:
 
 # global_init("data/db/main.db")
 # session = create_session()
-# session.add(SearchData(user_id=1, sticker_id=1, sticker_count=3, keyword="привет", use=0))
-# session.add(SearchData(user_id=1, sticker_id=1, sticker_count=3, keyword="как дела", use=0))
-# session.add(SearchData(user_id=1, sticker_id=1, sticker_count=3, keyword="так дела привет", use=0))
-# session.add(SearchData(user_id=1, sticker_id=2, sticker_count=3, keyword="привет кfк дела", use=0))
-# session.add(SearchData(user_id=1, sticker_id=2, sticker_count=3, keyword="дела", use=0))
-# session.add(SearchData(user_id=1, sticker_id=2, sticker_count=3, keyword="так вот", use=0))
-# session.add(SearchData(user_id=1, sticker_id=3, sticker_count=1, keyword="привет", use=0))
+# session.add(SearchData(user_id=1, sticker_unique_id=1, keyword="привет"))
+# session.add(SearchData(user_id=1, sticker_unique_id=1, keyword="как дела"))
+# session.add(SearchData(user_id=1, sticker_unique_id=1, keyword="так дела привет"))
+# session.add(SearchData(user_id=1, sticker_unique_id=2, keyword="привет кfк дела"))
+# session.add(SearchData(user_id=1, sticker_unique_id=2, keyword="дела"))
+# session.add(SearchData(user_id=1, sticker_unique_id=2, keyword="так вот"))
+# session.add(SearchData(user_id=1, sticker_unique_id=3, keyword="привет",))
 # session.commit()
 # print(Search("привет", user_id=1).results)

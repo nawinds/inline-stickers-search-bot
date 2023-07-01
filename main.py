@@ -2,17 +2,19 @@ import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters import Command, CommandStart
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import InlineQuery, ChosenInlineResult, InlineQueryResultCachedSticker
+from aiogram.types import InlineQuery, ChosenInlineResult, InlineQueryResultCachedSticker, ChatActions
 from aiogram.utils import executor
 from aiogram.utils.exceptions import InvalidQueryID
 from search import Search, clear_q
 from data.search_data import SearchData
 from data.sticker_sets import StickerSet
 from data.sticker_sets_data import StickerSetsData
+from data.stickers import Sticker
 from data.db_session import create_session, global_init
 from time import time
+import re
 
 logging.basicConfig(level=logging.INFO)
 
@@ -59,9 +61,49 @@ async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
     pass
 
 
-@dp.message_handler(Command('start'))
+@dp.message_handler(CommandStart(re.compile(r'add_set-(\d+)')))
+async def cmd_start_add_set(message: types.Message):
+    set_id = int(message.text.split("-")[1])
+    session = create_session()
+    set = session.get(StickerSet, set_id)
+    if not set:
+        await message.reply("You used a link to add a new set, but the specified set does not exist")
+        return
+    buttons = [
+        types.InlineKeyboardButton(text="Yes, add this set", callback_data=f"add_set-{set_id}"),
+        types.InlineKeyboardButton(text="No, thanks", callback_data="add_set-0")
+    ]
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    await message.reply(f'You used a link to add a *{set.title}* set. Are you sure you want to continue?',
+                        reply_markup=keyboard, parse_mode="markdown")
+
+
+@dp.callback_query_handler(lambda c: c.data.startswith("add_set-"))
+async def callback_add_set(callback: types.CallbackQuery):
+    set_id = int(callback.data.split("-")[1])
+    await callback.message.edit_reply_markup()
+    if set_id == 0:
+        await callback.answer("Set adding cancelled")
+        return
+    session = create_session()
+    set = session.query(StickerSet).get(set_id)
+    if not set:
+        await callback.answer("Sorry, this set no longer exists", show_alert=True)
+        return
+    await callback.answer("Adding the set...")
+    await bot.send_chat_action(callback.from_user.id, ChatActions.TYPING)
+    sticker_ids_list = session.query(StickerSetsData.sticker_unique_id) \
+        .filter(StickerSetsData.set_id == set_id).all()
+    stickers_list = [session.query(SearchData).filter(SearchData.user_id == set.owner_id,
+                                                      SearchData.sticker_unique_id == s).first()
+                     for s in sticker_ids_list]
+
+
+
+@dp.message_handler(CommandStart())
 async def cmd_start(message: types.Message):
-    await message.reply('Please enter the sticker pack name you want to search:')
+    await message.reply('Pls')
 
 
 @dp.message_handler(Command('new'))
@@ -77,23 +119,29 @@ async def cmd_set(message: types.Message):
 
 
 @dp.message_handler(Command('finish'), state=NewSetState.prompt)
-async def process_prompt_finish(message: types.Message, state: FSMContext):
+async def process_set_prompt_finish(message: types.Message, state: FSMContext):
     data = await state.get_data()
-    sticker = data.get('sticker')
+    sticker_unique_id = data.get('sticker_unique_id')
+    sticker_file_id = data.get('sticker_file')
     prompts = data.get('prompts')
     await NewSetState.sticker.set()
     session = create_session()
+    sticker = session.get(Sticker, sticker_unique_id)
+    if not sticker:
+        sticker = Sticker(sticker_unique_id=sticker_unique_id, sticker_file_id=sticker_file_id)
+        session.add(sticker)
+        session.commit()
     for p in prompts:
-        session.add(SearchData(sticker_id=sticker, keyword=p, user_id=message.from_user.id))
+        session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
+    session.add(StickerSetsData(set_id=data.get("set_id"), sticker_unique_id=sticker_unique_id))
     session.commit()
-    session.add(StickerSetsData(set_id=data.get("set_id"), sticker_id=sticker))
-    session.commit()
+    await state.update_data(prompts=[])
     await message.reply("Sticker saved. Now send another sticker. If you don't want "
                         "to add another sticker to this set, send /finish_set")
 
 
 @dp.message_handler(state=NewSetState.title)
-async def cmd_set(message: types.Message, state: FSMContext):
+async def process_set_title(message: types.Message, state: FSMContext):
     session = create_session()
     new_set = StickerSet(owner_id=message.from_user.id, title=message.text)
     session.add(new_set)
@@ -104,15 +152,16 @@ async def cmd_set(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=NewSetState.sticker, content_types=["sticker"])
-async def process_sticker(message: types.Message, state: FSMContext):
-    sticker = message.sticker.file_id
-    await state.update_data(sticker=sticker)
+async def process_set_sticker(message: types.Message, state: FSMContext):
+    sticker_file = message.sticker.file_id
+    sticker_unique_id = message.sticker.file_unique_id
+    await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
     await message.reply("Send a prompt for this sticker. To finish, send /finish")
     await NewSetState.prompt.set()
 
 
 @dp.message_handler(state=NewSetState.prompt)
-async def process_prompt(message: types.Message, state: FSMContext):
+async def process_set_prompt(message: types.Message, state: FSMContext):
     data = await state.get_data()
     prompts = data.get('prompts', [])
     new_prompt = clear_q(message.text)
@@ -129,7 +178,7 @@ async def process_prompt(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(Command('finish_set'), state=NewSetState.sticker)
-async def process_prompt_finish_set(message: types.Message, state: FSMContext):
+async def cmd_finish_set(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply("Ok. Your set is now saved")
 
@@ -137,20 +186,27 @@ async def process_prompt_finish_set(message: types.Message, state: FSMContext):
 @dp.message_handler(Command('finish'), state=NewStickerState.prompt)
 async def process_prompt_finish(message: types.Message, state: FSMContext):
     data = await state.get_data()
-    sticker = data.get('sticker')
+    sticker_unique_id = data.get('sticker_unique_id')
+    sticker_file = data.get('sticker_file')
     prompts = data.get('prompts')
     await state.finish()
     session = create_session()
+    sticker = session.get(Sticker, sticker_unique_id)
+    if not sticker:
+        sticker = Sticker(sticker_unique_id=sticker_unique_id, sticker_file_id=sticker_file)
+        session.add(sticker)
+        session.commit()
     for p in prompts:
-        session.add(SearchData(sticker_id=sticker, keyword=p, user_id=message.from_user.id))
+        session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
     session.commit()
     await message.reply("Sticker saved")
 
 
 @dp.message_handler(state=NewStickerState.sticker, content_types=["sticker"])
-async def process_sticker(message: types.Message, state: FSMContext):
-    sticker = message.sticker.file_id
-    await state.update_data(sticker=sticker)
+async def process_new_sticker(message: types.Message, state: FSMContext):
+    sticker_file = message.sticker.file_id
+    sticker_unique_id = message.sticker.file_unique_id
+    await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
 
     # # Fetch stickers from selected pack
     # stickers = await bot.get_sticker_set(pack_name)
@@ -163,7 +219,7 @@ async def process_sticker(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=NewStickerState.prompt)
-async def process_prompt(message: types.Message, state: FSMContext):
+async def process_sticker_prompt(message: types.Message, state: FSMContext):
     data = await state.get_data()
     prompts = data.get('prompts', [])
     new_prompt = clear_q(message.text)
