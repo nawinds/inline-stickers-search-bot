@@ -16,6 +16,8 @@ from data.db_session import create_session, global_init
 from data.search_data import SearchData
 from data.sticker_sets import StickerSet
 from data.stickers import Sticker
+from data.set_links import SetLink
+from data.user_sets import UserSet
 from search import Search, clear_q
 
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +43,7 @@ async def handle_inline_query(query: InlineQuery):
     q = query.query
     start = time()
     results = Search(q, query.from_user.id).get_results()
-    print("SEARCH TIME:", time() - start)
+    logging.info("SEARCH TIME:", time() - start)
     inline_results = []
 
     for i in range(len(results)):
@@ -96,6 +98,10 @@ async def callback_add_set(callback: types.CallbackQuery):
     await callback.answer("Adding the set...")
     await bot.send_chat_action(callback.from_user.id, ChatActions.TYPING)
 
+    set.user_sets.add(UserSet(user_id=callback.from_user.id))
+    session.commit()
+
+    await bot.send_message(callback.from_user.id, "Set successfully added!")
 
 
 @dp.message_handler(CommandStart())
@@ -105,7 +111,7 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(Command('new'))
 async def cmd_new(message: types.Message):
-    await NewStickerState.sticker.set()
+    await NewSetState.sticker.set()
     await message.reply('Please send a sticker to add it to search results')
 
 
@@ -120,6 +126,7 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
     data = await state.get_data()
     sticker_unique_id = data.get('sticker_unique_id')
     sticker_file_id = data.get('sticker_file')
+    set_id = data.get('set_id')
     prompts = data.get('prompts')
     await NewSetState.sticker.set()
     session = create_session()
@@ -128,13 +135,24 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
         sticker = Sticker(sticker_unique_id=sticker_unique_id, sticker_file_id=sticker_file_id)
         session.add(sticker)
         session.commit()
+    default_set = False
+    if not set_id:
+        default_set = True
+        set = session.query(StickerSet).filter(StickerSet.owner_id == message.from_user.id,
+                                               StickerSet.default == True).first()
+        if not set:
+            set = StickerSet(title="Default sticker set", owner_id=message.from_user.id, default=True)
+            session.add(set)
+            set.user_sets.append(UserSet(user_id=message.from_user.id))
+            session.commit()
+        set_id = set.id
+
     for p in prompts:
-        session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
-    #session.add(StickerSetsData(set_id=data.get("set_id"), sticker_unique_id=sticker_unique_id))
+        session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, set_id=set_id))
     session.commit()
     await state.update_data(prompts=[])
-    await message.reply("Sticker saved. Now send another sticker. If you don't want "
-                        "to add another sticker to this set, send /finish_set")
+    await message.reply("Sticker saved" + ". Now send another sticker. If you don't want "
+                        "to add another sticker to this set, send /finish_set" if default_set else "")
 
 
 @dp.message_handler(state=NewSetState.title)
@@ -179,57 +197,57 @@ async def cmd_finish_set(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply("Ok. Your set is now saved")
 
-
-@dp.message_handler(Command('finish'), state=NewStickerState.prompt)
-async def process_prompt_finish(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    sticker_unique_id = data.get('sticker_unique_id')
-    sticker_file = data.get('sticker_file')
-    prompts = data.get('prompts')
-    await state.finish()
-    session = create_session()
-    sticker = session.get(Sticker, sticker_unique_id)
-    if not sticker:
-        sticker = Sticker(sticker_unique_id=sticker_unique_id, sticker_file_id=sticker_file)
-        session.add(sticker)
-        session.commit()
-    for p in prompts:
-        session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
-    session.commit()
-    await message.reply("Sticker saved")
-
-
-@dp.message_handler(state=NewStickerState.sticker, content_types=["sticker"])
-async def process_new_sticker(message: types.Message, state: FSMContext):
-    sticker_file = message.sticker.file_id
-    sticker_unique_id = message.sticker.file_unique_id
-    await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
-
-    # # Fetch stickers from selected pack
-    # stickers = await bot.get_sticker_set(pack_name)
-    # if not stickers.stickers:
-    #     await message.reply('No stickers found in the specified pack.')
-    #     await state.finish()
-    #     return
-    await message.reply("Send a prompt for this sticker. To finish, send /finish")
-    await NewStickerState.prompt.set()
+#
+# @dp.message_handler(Command('finish'), state=NewStickerState.prompt)
+# async def process_prompt_finish(message: types.Message, state: FSMContext):
+#     data = await state.get_data()
+#     sticker_unique_id = data.get('sticker_unique_id')
+#     sticker_file = data.get('sticker_file')
+#     prompts = data.get('prompts')
+#     await state.finish()
+#     session = create_session()
+#     sticker = session.get(Sticker, sticker_unique_id)
+#     if not sticker:
+#         sticker = Sticker(sticker_unique_id=sticker_unique_id, sticker_file_id=sticker_file)
+#         session.add(sticker)
+#         session.commit()
+#     for p in prompts:
+#         session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
+#     session.commit()
+#     await message.reply("Sticker saved")
 
 
-@dp.message_handler(state=NewStickerState.prompt)
-async def process_sticker_prompt(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    prompts = data.get('prompts', [])
-    new_prompt = clear_q(message.text)
-    await state.update_data(prompts=prompts + [new_prompt])
-    with open("known_words.txt", encoding="utf-8") as read_file:
-        known_words = read_file.read().split()
-    for i in new_prompt.split():
-        if i not in known_words:
-            known_words.append(i)
-    with open("known_words.txt", "w", encoding="utf-8") as write_file:
-        write_file.write(" ".join(known_words))
-    await message.reply("Send a prompt for this sticker. To finish, send /finish")
-    await NewStickerState.prompt.set()
+# @dp.message_handler(state=NewStickerState.sticker, content_types=["sticker"])
+# async def process_new_sticker(message: types.Message, state: FSMContext):
+#     sticker_file = message.sticker.file_id
+#     sticker_unique_id = message.sticker.file_unique_id
+#     await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
+#
+#     # # Fetch stickers from selected pack
+#     # stickers = await bot.get_sticker_set(pack_name)
+#     # if not stickers.stickers:
+#     #     await message.reply('No stickers found in the specified pack.')
+#     #     await state.finish()
+#     #     return
+#     await message.reply("Send a prompt for this sticker. To finish, send /finish")
+#     await NewStickerState.prompt.set()
+
+
+# @dp.message_handler(state=NewStickerState.prompt)
+# async def process_sticker_prompt(message: types.Message, state: FSMContext):
+#     data = await state.get_data()
+#     prompts = data.get('prompts', [])
+#     new_prompt = clear_q(message.text)
+#     await state.update_data(prompts=prompts + [new_prompt])
+#     with open("known_words.txt", encoding="utf-8") as read_file:
+#         known_words = read_file.read().split()
+#     for i in new_prompt.split():
+#         if i not in known_words:
+#             known_words.append(i)
+#     with open("known_words.txt", "w", encoding="utf-8") as write_file:
+#         write_file.write(" ".join(known_words))
+#     await message.reply("Send a prompt for this sticker. To finish, send /finish")
+#     await NewStickerState.prompt.set()
 
 
 if __name__ == '__main__':

@@ -14,4 +14,4 @@ class StickerSet(SqlAlchemyBase):
 
     search_data = relationship("SearchData", back_populates="set")
     user_sets = relationship("UserSet", back_populates="set")
-    set_links = relationship("SetLinks", back_populates="set")
+    set_links = relationship("SetLink", back_populates="set")
