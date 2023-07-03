@@ -27,23 +27,18 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
-class NewStickerState(StatesGroup):
-    sticker = State()
-    prompt = State()
-
-
 class NewSetState(StatesGroup):
     title = State()
     sticker = State()
     prompt = State()
 
 
-@dp.inline_handler()
+@dp.inline_handler(state="*")
 async def handle_inline_query(query: InlineQuery):
     q = query.query
     start = time()
     results = Search(q, query.from_user.id).get_results()
-    logging.info("SEARCH TIME:", time() - start)
+    logging.info("SEARCH TIME: %s", time() - start)
     inline_results = []
 
     for i in range(len(results)):
@@ -60,30 +55,30 @@ async def handle_inline_query(query: InlineQuery):
         pass
 
 
-@dp.chosen_inline_handler()
+@dp.chosen_inline_handler(state="*")
 async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
     pass
 
 
-@dp.message_handler(CommandStart(re.compile(r'add_set-(\d+)')))
+@dp.message_handler(CommandStart(re.compile(r'add_set-([a-zA-Z]+)')), state="*")
 async def cmd_start_add_set(message: types.Message):
-    set_id = int(message.text.split("-")[1])
+    link_code = message.text.split("-")[1]
     session = create_session()
-    set = session.get(StickerSet, set_id)
-    if not set:
-        await message.reply("You used a link to add a new set, but the specified set does not exist")
+    link = session.query(SetLink).filter(SetLink.code == link_code).first()
+    if not link:
+        await message.reply("You used a link to add a new set, but the specified link does not exist")
         return
     buttons = [
-        types.InlineKeyboardButton(text="Yes, add this set", callback_data=f"add_set-{set_id}"),
+        types.InlineKeyboardButton(text="Yes, add this set", callback_data=f"add_set-{link.set_id}"),
         types.InlineKeyboardButton(text="No, thanks", callback_data="add_set-0")
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
-    await message.reply(f'You used a link to add a *{set.title}* set. Are you sure you want to continue?',
+    await message.reply(f'You used a link to add a *{link.set.title}* set. Are you sure you want to continue?',
                         reply_markup=keyboard, parse_mode="markdown")
 
 
-@dp.callback_query_handler(lambda c: c.data.startswith("add_set-"))
+@dp.callback_query_handler(lambda c: c.data.startswith("add_set-"), state="*")
 async def callback_add_set(callback: types.CallbackQuery):
     set_id = int(callback.data.split("-")[1])
     await callback.message.edit_reply_markup()
@@ -98,13 +93,60 @@ async def callback_add_set(callback: types.CallbackQuery):
     await callback.answer("Adding the set...")
     await bot.send_chat_action(callback.from_user.id, ChatActions.TYPING)
 
-    set.user_sets.add(UserSet(user_id=callback.from_user.id))
+    set.user_sets.append(UserSet(user_id=callback.from_user.id))
     session.commit()
 
     await bot.send_message(callback.from_user.id, "Set successfully added!")
 
 
-@dp.message_handler(CommandStart())
+@dp.callback_query_handler(lambda c: c.data.startswith("share_set-"), state="*")
+async def callback_share_set(callback: types.CallbackQuery):
+    set_id = int(callback.data.split("-")[1])
+    await callback.message.edit_reply_markup()
+    session = create_session()
+    set = session.query(StickerSet).get(set_id)
+    if not set:
+        await callback.answer("Sorry, this set no longer exists", show_alert=True)
+        return
+    await callback.answer("Creating the link...")
+
+    new_link = SetLink()
+    set.set_links.append(new_link)
+    session.commit()
+
+    keyboard = types.InlineKeyboardMarkup()
+    bot_info = await bot.me
+
+    keyboard.add(types.InlineKeyboardButton(text="Turn on notifications",
+                                            callback_data=f"notifications_on-{new_link.code}"))
+    await bot.send_message(callback.from_user.id, f"Here is a link for adding the {set.title} set. "
+                                                  f"You can now share it with your friends.\n\n"
+                                                  f"https://t.me/{bot_info.username}?"
+                                                  f"start=add\\_set-{new_link.code}\n\n"
+                                                  f"*If you would like to receive notifications "
+                                                  f"when someone adds your set, tap the button below.* "
+                                                  f"You can view a full list of your links by sending "
+                                                  f"/links command", reply_markup=keyboard, parse_mode="markdown")
+
+
+@dp.callback_query_handler(lambda c: c.data.startswith("notifications_on-"), state="*")
+async def callback_notifications_on_for_set(callback: types.CallbackQuery):
+    link_code = callback.data.split("-")[1]
+    await callback.message.edit_reply_markup()
+    session = create_session()
+    link = session.query(SetLink).filter(SetLink.code == link_code)
+    if not link:
+        await callback.answer("Sorry, this link no longer exists", show_alert=True)
+        return
+    await callback.answer("Enabling notifications...")
+
+    link.notifications = True
+    session.commit()
+    await bot.send_message(callback.from_user.id, "Notifications enabled! You can disable them in the "
+                                                      "list of your links by sending /links command")
+
+
+@dp.message_handler(CommandStart(), state="*")
 async def cmd_start(message: types.Message):
     await message.reply('Pls')
 
@@ -128,7 +170,6 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
     sticker_file_id = data.get('sticker_file')
     set_id = data.get('set_id')
     prompts = data.get('prompts')
-    await NewSetState.sticker.set()
     session = create_session()
     sticker = session.get(Sticker, sticker_unique_id)
     if not sticker:
@@ -151,8 +192,13 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
         session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, set_id=set_id))
     session.commit()
     await state.update_data(prompts=[])
-    await message.reply("Sticker saved" + ". Now send another sticker. If you don't want "
-                        "to add another sticker to this set, send /finish_set" if default_set else "")
+    if default_set:
+        await state.finish()
+        await message.reply("Sticker saved")
+    else:
+        await NewSetState.sticker.set()
+        await message.reply("Sticker saved. Now send another sticker. If you don't want "
+                            "to add another sticker to this set, send /finish_set")
 
 
 @dp.message_handler(state=NewSetState.title)
@@ -161,7 +207,7 @@ async def process_set_title(message: types.Message, state: FSMContext):
     new_set = StickerSet(owner_id=message.from_user.id, title=message.text)
     session.add(new_set)
     session.commit()
-    await state.update_data(title=message.text, set_id=new_set.set_id)
+    await state.update_data(title=message.text, set_id=new_set.id)
     await NewSetState.sticker.set()
     await message.reply('Please send a sticker for the new set')
 
@@ -196,6 +242,18 @@ async def process_set_prompt(message: types.Message, state: FSMContext):
 async def cmd_finish_set(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply("Ok. Your set is now saved")
+
+
+@dp.message_handler(Command('share'))
+async def cmd_share(message: types.Message):
+    buttons = [types.InlineKeyboardButton(text=set.title, callback_data=f"share_set-{set.id}")
+               for set in create_session().query(StickerSet).
+               filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False)]
+
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    await message.reply(f'Please choose a sticker set you would like to share and I will generate a link',
+                        reply_markup=keyboard, parse_mode="markdown")
 
 #
 # @dp.message_handler(Command('finish'), state=NewStickerState.prompt)

@@ -3,6 +3,7 @@ from pyxdameraulevenshtein import normalized_damerau_levenshtein_distance_seqs
 import string
 from data.db_session import create_session
 from data.search_data import SearchData
+from data.user_sets import UserSet
 from difflib import SequenceMatcher
 
 
@@ -25,6 +26,8 @@ class Search:
         self.q = q.lower()
         self.uid = user_id
         self.known_words = self.get_known_words()
+        session = create_session()
+        self.user_set_list = session.query(UserSet.id).filter(UserSet.user_id == self.uid).first()
 
     def get_results(self):
         return self.search_and_range()
@@ -100,7 +103,7 @@ class Search:
     def search_term(self, term, k=1):
         term = clear_q(term)
         session = create_session()
-        found = session.query(SearchData).filter(SearchData.user_id == self.uid,
+        found = session.query(SearchData).filter(SearchData.set_id.in_(self.user_set_list),
                                                  SearchData.keyword.like(f"%{term}%")).all()
         return [(res.sticker.sticker_file_id,
                  k * self.similarity_rate(term, res.keyword) /
