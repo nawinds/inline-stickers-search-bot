@@ -1,13 +1,15 @@
-import sqlalchemy
-from .db_session import SqlAlchemyBase
-from sqlalchemy.orm import relationship
-from string import ascii_uppercase, ascii_lowercase
 from random import choice
+from string import ascii_uppercase, ascii_lowercase
+
+import sqlalchemy
+from sqlalchemy.orm import relationship
+
+from db_session import SqlAlchemyBase
 
 
 def generate_code():
     alphabet = ascii_lowercase + ascii_uppercase + "0123456789"
-    return "".join([choice(alphabet) for i in range(10)])
+    return "".join([choice(alphabet) for _ in range(10)])
 
 
 class SetLink(SqlAlchemyBase):

@@ -8,15 +8,15 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, CommandStart
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import InlineQuery, ChosenInlineResult, InlineQueryResultCachedSticker, ChatActions
+from aiogram.types import InlineQuery, InlineQueryResultCachedSticker, ChatActions
 from aiogram.utils import executor
 from aiogram.utils.exceptions import InvalidQueryID
 
 from data.db_session import create_session, global_init
 from data.search_data import SearchData
+from data.set_links import SetLink
 from data.sticker_sets import StickerSet
 from data.stickers import Sticker
-from data.set_links import SetLink
 from data.user_sets import UserSet
 from search import Search, clear_q
 
@@ -55,9 +55,9 @@ async def handle_inline_query(query: InlineQuery):
         pass
 
 
-@dp.chosen_inline_handler(state="*")
-async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
-    pass
+# @dp.chosen_inline_handler(state="*")
+# async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
+#     pass
 
 
 @dp.message_handler(CommandStart(re.compile(r'add_set-([a-zA-Z]+)')), state="*")
@@ -86,14 +86,14 @@ async def callback_add_set(callback: types.CallbackQuery):
         await callback.answer("Set adding cancelled")
         return
     session = create_session()
-    set = session.query(StickerSet).get(set_id)
-    if not set:
+    sticker_set = session.query(StickerSet).get(set_id)
+    if not sticker_set:
         await callback.answer("Sorry, this set no longer exists", show_alert=True)
         return
     await callback.answer("Adding the set...")
     await bot.send_chat_action(callback.from_user.id, ChatActions.TYPING)
 
-    set.user_sets.append(UserSet(user_id=callback.from_user.id))
+    sticker_set.user_sets.append(UserSet(user_id=callback.from_user.id))
     session.commit()
 
     await bot.send_message(callback.from_user.id, "Set successfully added!")
@@ -104,14 +104,14 @@ async def callback_share_set(callback: types.CallbackQuery):
     set_id = int(callback.data.split("-")[1])
     await callback.message.edit_reply_markup()
     session = create_session()
-    set = session.query(StickerSet).get(set_id)
-    if not set:
+    sticker_set = session.query(StickerSet).get(set_id)
+    if not sticker_set:
         await callback.answer("Sorry, this set no longer exists", show_alert=True)
         return
     await callback.answer("Creating the link...")
 
     new_link = SetLink()
-    set.set_links.append(new_link)
+    sticker_set.set_links.append(new_link)
     session.commit()
 
     keyboard = types.InlineKeyboardMarkup()
@@ -119,7 +119,7 @@ async def callback_share_set(callback: types.CallbackQuery):
 
     keyboard.add(types.InlineKeyboardButton(text="Turn on notifications",
                                             callback_data=f"notifications_on-{new_link.code}"))
-    await bot.send_message(callback.from_user.id, f"Here is a link for adding the {set.title} set. "
+    await bot.send_message(callback.from_user.id, f"Here is a link for adding the {sticker_set.title} set. "
                                                   f"You can now share it with your friends.\n\n"
                                                   f"https://t.me/{bot_info.username}?"
                                                   f"start=add\\_set-{new_link.code}\n\n"
@@ -143,7 +143,7 @@ async def callback_notifications_on_for_set(callback: types.CallbackQuery):
     link.notifications = True
     session.commit()
     await bot.send_message(callback.from_user.id, "Notifications enabled! You can disable them in the "
-                                                      "list of your links by sending /links command")
+                                                  "list of your links by sending /links command")
 
 
 @dp.message_handler(CommandStart(), state="*")
@@ -179,14 +179,14 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
     default_set = False
     if not set_id:
         default_set = True
-        set = session.query(StickerSet).filter(StickerSet.owner_id == message.from_user.id,
-                                               StickerSet.default == True).first()
-        if not set:
-            set = StickerSet(title="Default sticker set", owner_id=message.from_user.id, default=True)
-            session.add(set)
-            set.user_sets.append(UserSet(user_id=message.from_user.id))
+        sticker_set = session.query(StickerSet).filter(StickerSet.owner_id == message.from_user.id,
+                                                       StickerSet.default == True).first()
+        if not sticker_set:
+            sticker_set = StickerSet(title="Default sticker set", owner_id=message.from_user.id, default=True)
+            session.add(sticker_set)
+            sticker_set.user_sets.append(UserSet(user_id=message.from_user.id))
             session.commit()
-        set_id = set.id
+        set_id = sticker_set.id
 
     for p in prompts:
         session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, set_id=set_id))
@@ -246,8 +246,8 @@ async def cmd_finish_set(message: types.Message, state: FSMContext):
 
 @dp.message_handler(Command('share'))
 async def cmd_share(message: types.Message):
-    buttons = [types.InlineKeyboardButton(text=set.title, callback_data=f"share_set-{set.id}")
-               for set in create_session().query(StickerSet).
+    buttons = [types.InlineKeyboardButton(text=sticker_set.title, callback_data=f"share_set-{sticker_set.id}")
+               for sticker_set in create_session().query(StickerSet).
                filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False)]
 
     keyboard = types.InlineKeyboardMarkup(row_width=1)

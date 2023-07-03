@@ -1,10 +1,12 @@
+import string
+from difflib import SequenceMatcher
+
 import numpy as np
 from pyxdameraulevenshtein import normalized_damerau_levenshtein_distance_seqs
-import string
+
 from data.db_session import create_session
 from data.search_data import SearchData
 from data.user_sets import UserSet
-from difflib import SequenceMatcher
 
 
 def summed_dict(lst: list):
