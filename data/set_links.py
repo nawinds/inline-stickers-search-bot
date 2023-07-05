@@ -4,7 +4,7 @@ from string import ascii_uppercase, ascii_lowercase
 import sqlalchemy
 from sqlalchemy.orm import relationship
 
-from db_session import SqlAlchemyBase
+from data.db_session import SqlAlchemyBase
 
 
 def generate_code():

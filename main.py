@@ -6,7 +6,7 @@ from time import time
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command, CommandStart
+from aiogram.dispatcher.filters import Command, CommandStart, CommandHelp
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineQuery, InlineQueryResultCachedSticker, ChatActions
 from aiogram.utils import executor
@@ -66,7 +66,7 @@ async def cmd_start_add_set(message: types.Message):
     session = create_session()
     link = session.query(SetLink).filter(SetLink.code == link_code).first()
     if not link:
-        await message.reply("You used a link to add a new set, but the specified link does not exist")
+        await message.answer("You used a link to add a new set, but the specified link does not exist")
         return
     buttons = [
         types.InlineKeyboardButton(text="Yes, add this set", callback_data=f"add_set-{link.set_id}"),
@@ -74,8 +74,8 @@ async def cmd_start_add_set(message: types.Message):
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
-    await message.reply(f'You used a link to add a *{link.set.title}* set. Are you sure you want to continue?',
-                        reply_markup=keyboard, parse_mode="markdown")
+    await message.answer(f'You used a link to add a *{link.set.title}* set. Are you sure you want to continue?',
+                         reply_markup=keyboard, parse_mode="markdown")
 
 
 @dp.callback_query_handler(lambda c: c.data.startswith("add_set-"), state="*")
@@ -148,19 +148,53 @@ async def callback_notifications_on_for_set(callback: types.CallbackQuery):
 
 @dp.message_handler(CommandStart(), state="*")
 async def cmd_start(message: types.Message):
-    await message.reply('Pls')
+    bot_info = await bot.me
+    await message.answer(f'Hi!\n'
+                         f'This bot will help you find your stickers in inline mode. '
+                         f'At first you should provide descriptions for every sticker you want to '
+                         f'add to search results.\n\n'
+                         f'*/new — add sticker to search index. Use this command if you want to add a description '
+                         f'for sticker.*\n\n'
+                         f'Stickers\' descriptions are collected into _sticker sets_. By default, '
+                         f'stickers are kept in a default sticker set, unique for every user.\n\n'
+                         f'*/set — create a new sticker set (you will be asked to send stickers '
+                         f'and descriptions for it)*.\n\n'
+                         f'You can share all your sticker sets except for the default set with other users by '
+                         f'sending them the link to add your sticker set.\n\n'
+                         f'*/share — create a link for sharing a sticker set.*\n\n'
+                         f'To search for a sticker in any Telegram chat, just type "@{bot_info.username}" '
+                         f'in the message input field and start typing your query. Sticker suggestions will '
+                         f'appear above if there are any.\n\n'
+                         f'*/help — all available bot commands.*\n\n'
+                         f'_If you have any questions or suggestions, feel free to contact @nawinds!_\n\n'
+                         f'[Source code of this bot](https://github.com/nawinds/inline-stickers-search-bot)',
+                         parse_mode="markdown", disable_web_page_preview=True)
+
+
+@dp.message_handler(CommandHelp(), state="*")
+async def cmd_start(message: types.Message):
+    await message.answer(f'Here is a list of available bot commands:\n\n'
+                         f'/new — add sticker to search index. Use this command if you want to add a description '
+                         f'for sticker.\n'
+                         f'/set — create a new sticker set (you will be asked to send stickers '
+                         f'and descriptions for it).\n'
+                         f'/share — create a link for sharing a sticker set.\n'
+                         f'/help — all available bot commands.\n'
+                         f'_If you have any questions or suggestions, feel free to contact @nawinds!_\n\n'
+                         f'[Source code of this bot](https://github.com/nawinds/inline-stickers-search-bot)',
+                         parse_mode="markdown", disable_web_page_preview=True)
 
 
 @dp.message_handler(Command('new'))
 async def cmd_new(message: types.Message):
     await NewSetState.sticker.set()
-    await message.reply('Please send a sticker to add it to search results')
+    await message.answer('Please send a sticker to add it to search results')
 
 
 @dp.message_handler(Command('set'))
 async def cmd_set(message: types.Message):
     await NewSetState.title.set()
-    await message.reply('Please send a title for the new set')
+    await message.answer('Please send a title for the new set')
 
 
 @dp.message_handler(Command('finish'), state=NewSetState.prompt)
@@ -194,11 +228,11 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
     await state.update_data(prompts=[])
     if default_set:
         await state.finish()
-        await message.reply("Sticker saved")
+        await message.answer("Sticker saved")
     else:
         await NewSetState.sticker.set()
-        await message.reply("Sticker saved. Now send another sticker. If you don't want "
-                            "to add another sticker to this set, send /finish_set")
+        await message.answer("Sticker saved. Now send another sticker. If you don't want "
+                             "to add another sticker to this set, send /finish_set")
 
 
 @dp.message_handler(state=NewSetState.title)
@@ -209,7 +243,7 @@ async def process_set_title(message: types.Message, state: FSMContext):
     session.commit()
     await state.update_data(title=message.text, set_id=new_set.id)
     await NewSetState.sticker.set()
-    await message.reply('Please send a sticker for the new set')
+    await message.answer('Please send a sticker for the new set')
 
 
 @dp.message_handler(state=NewSetState.sticker, content_types=["sticker"])
@@ -217,7 +251,7 @@ async def process_set_sticker(message: types.Message, state: FSMContext):
     sticker_file = message.sticker.file_id
     sticker_unique_id = message.sticker.file_unique_id
     await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
-    await message.reply("Send a prompt for this sticker. To finish, send /finish")
+    await message.answer("Send a prompt for this sticker. To finish, send /finish")
     await NewSetState.prompt.set()
 
 
@@ -234,14 +268,14 @@ async def process_set_prompt(message: types.Message, state: FSMContext):
             known_words.append(i)
     with open("known_words.txt", "w", encoding="utf-8") as write_file:
         write_file.write(" ".join(known_words))
-    await message.reply("Send a prompt for this sticker. To finish, send /finish")
+    await message.answer("Send a prompt for this sticker. To finish, send /finish")
     await NewSetState.prompt.set()
 
 
 @dp.message_handler(Command('finish_set'), state=NewSetState.sticker)
 async def cmd_finish_set(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.reply("Ok. Your set is now saved")
+    await message.answer("Ok. Your set is now saved")
 
 
 @dp.message_handler(Command('share'))
@@ -252,8 +286,9 @@ async def cmd_share(message: types.Message):
 
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
-    await message.reply(f'Please choose a sticker set you would like to share and I will generate a link',
-                        reply_markup=keyboard, parse_mode="markdown")
+    await message.answer(f'Please choose a sticker set you would like to share and I will generate a link',
+                         reply_markup=keyboard, parse_mode="markdown")
+
 
 #
 # @dp.message_handler(Command('finish'), state=NewStickerState.prompt)
@@ -272,7 +307,7 @@ async def cmd_share(message: types.Message):
 #     for p in prompts:
 #         session.add(SearchData(sticker_unique_id=sticker_unique_id, keyword=p, user_id=message.from_user.id))
 #     session.commit()
-#     await message.reply("Sticker saved")
+#     await message.answer("Sticker saved")
 
 
 # @dp.message_handler(state=NewStickerState.sticker, content_types=["sticker"])
@@ -284,10 +319,10 @@ async def cmd_share(message: types.Message):
 #     # # Fetch stickers from selected pack
 #     # stickers = await bot.get_sticker_set(pack_name)
 #     # if not stickers.stickers:
-#     #     await message.reply('No stickers found in the specified pack.')
+#     #     await message.answer('No stickers found in the specified pack.')
 #     #     await state.finish()
 #     #     return
-#     await message.reply("Send a prompt for this sticker. To finish, send /finish")
+#     await message.answer("Send a prompt for this sticker. To finish, send /finish")
 #     await NewStickerState.prompt.set()
 
 
@@ -304,7 +339,7 @@ async def cmd_share(message: types.Message):
 #             known_words.append(i)
 #     with open("known_words.txt", "w", encoding="utf-8") as write_file:
 #         write_file.write(" ".join(known_words))
-#     await message.reply("Send a prompt for this sticker. To finish, send /finish")
+#     await message.answer("Send a prompt for this sticker. To finish, send /finish")
 #     await NewStickerState.prompt.set()
 
 
