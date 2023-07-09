@@ -84,8 +84,11 @@ class Search:
         array = np.array(self.known_words)
         result = list(zip(self.known_words,
                           list(normalized_damerau_levenshtein_distance_seqs(word, array))))
-        corrected_word, rate = min(result, key=lambda x: x[1])
-        if rate > 0.4:
+        try:
+            corrected_word, rate = min(result, key=lambda x: x[1])
+            if rate > 0.4:
+                return word
+        except ValueError:
             return word
         return corrected_word
 

@@ -8,7 +8,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, CommandStart, CommandHelp
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import InlineQuery, InlineQueryResultCachedSticker, ChatActions
+from aiogram.types import InlineQuery, InlineQueryResultCachedSticker, ChosenInlineResult
 from aiogram.utils import executor
 from aiogram.utils.exceptions import InvalidQueryID
 
@@ -49,15 +49,102 @@ async def handle_inline_query(query: InlineQuery):
             )
         )
     try:
-        await query.answer(inline_results)
+        await query.answer(inline_results, cache_time=60, is_personal=True)
     except InvalidQueryID:
         # Catch InvalidQueryID error when user cancels the query
         pass
 
 
-# @dp.chosen_inline_handler(state="*")
-# async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
-#     pass
+@dp.chosen_inline_handler(state="*")
+async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
+    logging.info("Chosen result with id %s", chosen_inline_result.result_id)
+
+
+@dp.callback_query_handler(lambda c: c.data.startswith("add_set-"), state="*")
+async def callback_add_set(callback: types.CallbackQuery):
+    await callback.message.edit_reply_markup()
+    set_id = int(callback.data.split("-")[1].split(",")[0])
+    if set_id == 0:
+        await callback.answer("Set adding cancelled")
+        return
+    notifications = bool(int(callback.data.split("-")[1].split(",")[1]))
+
+    session = create_session()
+    sticker_set = session.get(StickerSet, set_id)
+    if not sticker_set:
+        await callback.answer("Sorry, this set no longer exists", show_alert=True)
+        return
+    await callback.answer("Adding the set...")
+
+    sticker_set.user_sets.append(UserSet(user_id=callback.from_user.id))
+    session.commit()
+    if notifications:
+        await bot.send_message(sticker_set.owner_id, f"Your *{sticker_set.title}* set was added by someone",
+                               parse_mode="markdown")
+    await bot.send_message(callback.from_user.id, "Set successfully added!")
+
+
+@dp.callback_query_handler(lambda c: c.data.startswith("share_set-"), state="*")
+async def callback_share_set(callback: types.CallbackQuery):
+    set_id = int(callback.data.split("-")[1])
+    await callback.message.edit_reply_markup()
+    session = create_session()
+    sticker_set = session.get(StickerSet, set_id)
+    if not sticker_set:
+        await callback.answer("Sorry, this set no longer exists", show_alert=True)
+        return
+    await callback.answer()
+
+    link = session.query(SetLink).filter(SetLink.set_id == set_id).first()
+    if not link:
+        link = SetLink()
+        sticker_set.set_links.append(link)
+        session.commit()
+
+    bot_info = await bot.me
+    keyboard = types.InlineKeyboardMarkup()
+    if sticker_set.owner_id == callback.from_user.id:
+        keyboard.add(types.InlineKeyboardButton(text=f"Turn {'off' if link.notifications else 'on'} notifications",
+                                                callback_data=f"notifications_"
+                                                              f"{'off' if link.notifications else 'on'}-"
+                                                              f"{link.code}"))
+    await bot.send_message(callback.from_user.id, f"Here is a link for adding the {sticker_set.title} set. "
+                                                  f"You can now share it with your friends.\n\n"
+                                                  f"https://t.me/{bot_info.username}?"
+                                                  f"start=add\\_set-{link.code}\n\n"
+                                                  f"*If you would like to receive notifications "
+                                                  f"when someone adds your set, tap the button below.* "
+                                                  f"You can view a full list of your links by sending "
+                                                  f"/links command", reply_markup=keyboard, parse_mode="markdown")
+
+
+async def notifications_toggle(callback: types.CallbackQuery, enable: bool):
+    link_code = callback.data.split("-")[1]
+    session = create_session()
+    link = session.query(SetLink).filter(SetLink.code == link_code).first()
+    if not link:
+        await callback.answer("Sorry, this link no longer exists", show_alert=True)
+        return
+    await callback.answer()
+
+    link.notifications = enable
+    session.commit()
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text=f"Turn {'off' if enable else 'on'} notifications",
+                                            callback_data=f"notifications_{'off' if enable else 'on'}-{link.code}"))
+    await callback.message.edit_reply_markup(keyboard)
+    await bot.send_message(callback.from_user.id, f"Notifications {'enabled' if enable else 'disabled'}!")
+
+
+@dp.callback_query_handler(lambda c: c.data.startswith("notifications_on-"), state="*")
+async def callback_notifications_on_for_set(callback: types.CallbackQuery):
+    await notifications_toggle(callback, True)
+
+
+@dp.callback_query_handler(lambda c: c.data.startswith("notifications_off-"), state="*")
+async def callback_notifications_off_for_set(callback: types.CallbackQuery):
+    await notifications_toggle(callback, False)
 
 
 @dp.message_handler(CommandStart(re.compile(r'add_set-([a-zA-Z]+)')), state="*")
@@ -69,7 +156,8 @@ async def cmd_start_add_set(message: types.Message):
         await message.answer("You used a link to add a new set, but the specified link does not exist")
         return
     buttons = [
-        types.InlineKeyboardButton(text="Yes, add this set", callback_data=f"add_set-{link.set_id}"),
+        types.InlineKeyboardButton(text="Yes, add this set",
+                                   callback_data=f"add_set-{link.set_id},{int(link.notifications)}"),
         types.InlineKeyboardButton(text="No, thanks", callback_data="add_set-0")
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -78,76 +166,9 @@ async def cmd_start_add_set(message: types.Message):
                          reply_markup=keyboard, parse_mode="markdown")
 
 
-@dp.callback_query_handler(lambda c: c.data.startswith("add_set-"), state="*")
-async def callback_add_set(callback: types.CallbackQuery):
-    set_id = int(callback.data.split("-")[1])
-    await callback.message.edit_reply_markup()
-    if set_id == 0:
-        await callback.answer("Set adding cancelled")
-        return
-    session = create_session()
-    sticker_set = session.query(StickerSet).get(set_id)
-    if not sticker_set:
-        await callback.answer("Sorry, this set no longer exists", show_alert=True)
-        return
-    await callback.answer("Adding the set...")
-    await bot.send_chat_action(callback.from_user.id, ChatActions.TYPING)
-
-    sticker_set.user_sets.append(UserSet(user_id=callback.from_user.id))
-    session.commit()
-
-    await bot.send_message(callback.from_user.id, "Set successfully added!")
-
-
-@dp.callback_query_handler(lambda c: c.data.startswith("share_set-"), state="*")
-async def callback_share_set(callback: types.CallbackQuery):
-    set_id = int(callback.data.split("-")[1])
-    await callback.message.edit_reply_markup()
-    session = create_session()
-    sticker_set = session.query(StickerSet).get(set_id)
-    if not sticker_set:
-        await callback.answer("Sorry, this set no longer exists", show_alert=True)
-        return
-    await callback.answer("Creating the link...")
-
-    new_link = SetLink()
-    sticker_set.set_links.append(new_link)
-    session.commit()
-
-    keyboard = types.InlineKeyboardMarkup()
-    bot_info = await bot.me
-
-    keyboard.add(types.InlineKeyboardButton(text="Turn on notifications",
-                                            callback_data=f"notifications_on-{new_link.code}"))
-    await bot.send_message(callback.from_user.id, f"Here is a link for adding the {sticker_set.title} set. "
-                                                  f"You can now share it with your friends.\n\n"
-                                                  f"https://t.me/{bot_info.username}?"
-                                                  f"start=add\\_set-{new_link.code}\n\n"
-                                                  f"*If you would like to receive notifications "
-                                                  f"when someone adds your set, tap the button below.* "
-                                                  f"You can view a full list of your links by sending "
-                                                  f"/links command", reply_markup=keyboard, parse_mode="markdown")
-
-
-@dp.callback_query_handler(lambda c: c.data.startswith("notifications_on-"), state="*")
-async def callback_notifications_on_for_set(callback: types.CallbackQuery):
-    link_code = callback.data.split("-")[1]
-    await callback.message.edit_reply_markup()
-    session = create_session()
-    link = session.query(SetLink).filter(SetLink.code == link_code)
-    if not link:
-        await callback.answer("Sorry, this link no longer exists", show_alert=True)
-        return
-    await callback.answer("Enabling notifications...")
-
-    link.notifications = True
-    session.commit()
-    await bot.send_message(callback.from_user.id, "Notifications enabled! You can disable them in the "
-                                                  "list of your links by sending /links command")
-
-
 @dp.message_handler(CommandStart(), state="*")
 async def cmd_start(message: types.Message):
+    print(message.text)
     bot_info = await bot.me
     await message.answer(f'Hi!\n'
                          f'This bot will help you find your stickers in inline mode. '
@@ -172,7 +193,7 @@ async def cmd_start(message: types.Message):
 
 
 @dp.message_handler(CommandHelp(), state="*")
-async def cmd_start(message: types.Message):
+async def cmd_help(message: types.Message):
     await message.answer(f'Here is a list of available bot commands:\n\n'
                          f'/new — add sticker to search index. Use this command if you want to add a description '
                          f'for sticker.\n'
@@ -188,13 +209,17 @@ async def cmd_start(message: types.Message):
 @dp.message_handler(Command('new'))
 async def cmd_new(message: types.Message):
     await NewSetState.sticker.set()
-    await message.answer('Please send a sticker to add it to search results')
+    await message.answer('Please send a sticker to add it to search results.\n'
+                         '_To cancel adding a sticker, send /cancel_',
+                         parse_mode="markdown")
 
 
 @dp.message_handler(Command('set'))
 async def cmd_set(message: types.Message):
     await NewSetState.title.set()
-    await message.answer('Please send a title for the new set')
+    await message.answer('Please send a title for the new set.\n'
+                         '_To cancel creating the set, send /cancel_',
+                         parse_mode="markdown")
 
 
 @dp.message_handler(Command('finish'), state=NewSetState.prompt)
@@ -235,6 +260,34 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext):
                              "to add another sticker to this set, send /finish_set")
 
 
+@dp.message_handler(Command('finish_set'), state=NewSetState.sticker)
+async def cmd_finish_set(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer("Ok. Your set is now saved")
+
+
+@dp.message_handler(Command('cancel'), state=NewSetState.all_states_names)
+async def cmd_cancel(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.reply("Action cancelled")
+
+
+@dp.message_handler(Command('share'))
+async def cmd_share(message: types.Message):
+    buttons = [types.InlineKeyboardButton(text=sticker_set.title, callback_data=f"share_set-{sticker_set.id}")
+               for sticker_set in create_session().query(StickerSet).
+               filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False)]
+
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    if not buttons:
+        await message.answer("You don't have sticker sets that you can share. "
+                             "Create one with /set command")
+        return
+    await message.answer(f'Please choose a sticker set you would like to share and I will generate a link',
+                         reply_markup=keyboard, parse_mode="markdown")
+
+
 @dp.message_handler(state=NewSetState.title)
 async def process_set_title(message: types.Message, state: FSMContext):
     session = create_session()
@@ -243,7 +296,7 @@ async def process_set_title(message: types.Message, state: FSMContext):
     session.commit()
     await state.update_data(title=message.text, set_id=new_set.id)
     await NewSetState.sticker.set()
-    await message.answer('Please send a sticker for the new set')
+    await message.answer('Sticker set created! Please send the first sticker for your new set')
 
 
 @dp.message_handler(state=NewSetState.sticker, content_types=["sticker"])
@@ -251,7 +304,7 @@ async def process_set_sticker(message: types.Message, state: FSMContext):
     sticker_file = message.sticker.file_id
     sticker_unique_id = message.sticker.file_unique_id
     await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
-    await message.answer("Send a prompt for this sticker. To finish, send /finish")
+    await message.answer("Send a prompt for this sticker")
     await NewSetState.prompt.set()
 
 
@@ -268,26 +321,8 @@ async def process_set_prompt(message: types.Message, state: FSMContext):
             known_words.append(i)
     with open("known_words.txt", "w", encoding="utf-8") as write_file:
         write_file.write(" ".join(known_words))
-    await message.answer("Send a prompt for this sticker. To finish, send /finish")
+    await message.answer("Send another prompt for this sticker. To finish, send /finish")
     await NewSetState.prompt.set()
-
-
-@dp.message_handler(Command('finish_set'), state=NewSetState.sticker)
-async def cmd_finish_set(message: types.Message, state: FSMContext):
-    await state.finish()
-    await message.answer("Ok. Your set is now saved")
-
-
-@dp.message_handler(Command('share'))
-async def cmd_share(message: types.Message):
-    buttons = [types.InlineKeyboardButton(text=sticker_set.title, callback_data=f"share_set-{sticker_set.id}")
-               for sticker_set in create_session().query(StickerSet).
-               filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False)]
-
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-    keyboard.add(*buttons)
-    await message.answer(f'Please choose a sticker set you would like to share and I will generate a link',
-                         reply_markup=keyboard, parse_mode="markdown")
 
 
 #
