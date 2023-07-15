@@ -290,6 +290,9 @@ async def cmd_share(message: types.Message):
 
 @dp.message_handler(state=NewSetState.title)
 async def process_set_title(message: types.Message, state: FSMContext):
+    if len(message.text) > 1000:
+        await message.reply("This title exceeds 1000 characters. Please, try again")
+        return
     session = create_session()
     new_set = StickerSet(owner_id=message.from_user.id, title=message.text)
     session.add(new_set)
@@ -310,6 +313,9 @@ async def process_set_sticker(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=NewSetState.prompt)
 async def process_set_prompt(message: types.Message, state: FSMContext):
+    if len(message.text) > 5000:
+        await message.reply("This prompt exceeds 5000 characters. Please, try again")
+        return
     data = await state.get_data()
     prompts = data.get('prompts', [])
     new_prompt = clear_q(message.text)
