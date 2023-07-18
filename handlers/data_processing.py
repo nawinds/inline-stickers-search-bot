@@ -6,6 +6,7 @@ from aiogram_i18n import I18nContext
 
 from data.db_session import create_session
 from data.sticker_sets import StickerSet
+from data.user_sets import UserSet
 from instances import NewSetState
 from search import clear_q
 
@@ -21,6 +22,8 @@ async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext
     session = create_session()
     new_set = StickerSet(owner_id=message.from_user.id, title=message.text)
     session.add(new_set)
+    session.commit()
+    session.add(UserSet(user_id=message.from_user.id, set_id=new_set.id))
     session.commit()
     await state.update_data(title=message.text, set_id=new_set.id)
     await state.set_state(NewSetState.sticker)

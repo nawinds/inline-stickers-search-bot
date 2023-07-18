@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
 "POT-Creation-Date: 2023-07-18 18:55+0300\n"
-"PO-Revision-Date: 2023-07-18 18:57+0300\n"
+"PO-Revision-Date: 2023-07-18 20:36+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: ru\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: handlers/callbacks.py:25
 msgid "callbacks.add_set.cancelled"
-msgstr "Отправьте описание для этого стикера"
+msgstr "Добавление сета отменено"
 
 #: handlers/callbacks.py:32 handlers/callbacks.py:55
 msgid "callbacks.global.set_not_found"

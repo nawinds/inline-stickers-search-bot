@@ -39,7 +39,7 @@ async def add_set(callback: types.CallbackQuery, i18n: I18nContext):
     if notifications:
         await bot.send_message(
             sticker_set.owner_id,
-            Template(i18n.gettext("callbacks.add_set.notification"))
+            Template(i18n.gettext("callbacks.add_set.notification", title=sticker_set.title))
             .substitute(title=sticker_set.title),
             parse_mode="markdown")
     await bot.send_message(callback.from_user.id, i18n.gettext("callbacks.add_set.added"))

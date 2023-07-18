@@ -119,14 +119,13 @@ async def cmd_cancel(message: types.Message, state: FSMContext, i18n: I18nContex
 @commands.message(Command('share'))
 async def cmd_share(message: types.Message, i18n: I18nContext):
     builder = InlineKeyboardBuilder()
-
-    for sticker_set in create_session().query(StickerSet). \
-            filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False):
+    sets = create_session().query(StickerSet). \
+        filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False).all()
+    for sticker_set in sets:
         builder.button(text=sticker_set.title, callback_data=f"share_set-{sticker_set.id}")
 
     builder.adjust(1)
-
-    if not builder.buttons:
+    if not sets:
         await message.answer(i18n.gettext("commands.share.no_sets"))
         return
     await message.answer(i18n.gettext("commands.share.choose"),
