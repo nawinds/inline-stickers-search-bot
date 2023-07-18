@@ -9,6 +9,7 @@ from instances import NewSetState
 from search import clear_q
 
 data_processing = Router()
+data_processing.message.filter(F.chat.type == "private")
 
 
 @data_processing.message(StateFilter(NewSetState.title))

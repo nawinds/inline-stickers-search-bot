@@ -1,7 +1,7 @@
 import re
 
 from aiogram import Router
-from aiogram import types
+from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -14,8 +14,10 @@ from data.set_links import SetLink
 from data.sticker_sets import StickerSet
 from data.stickers import Sticker
 from data.user_sets import UserSet
+from instances import bot
 
 commands = Router()
+commands.message.filter(F.chat.type == "private")
 
 
 @commands.message(CommandStart(re.compile(r'add_set-([a-zA-Z]+)')))
