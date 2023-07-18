@@ -123,15 +123,3 @@ class Search:
         results = summed_dict(results)
         results = {results[key]: key for key in results.keys()}
         return [results[r] for r in sorted(results.keys(), reverse=True)]
-
-# global_init("data/db/main.db")
-# session = create_session()
-# session.add(SearchData(user_id=1, sticker_unique_id=1, keyword="привет"))
-# session.add(SearchData(user_id=1, sticker_unique_id=1, keyword="как дела"))
-# session.add(SearchData(user_id=1, sticker_unique_id=1, keyword="так дела привет"))
-# session.add(SearchData(user_id=1, sticker_unique_id=2, keyword="привет кfк дела"))
-# session.add(SearchData(user_id=1, sticker_unique_id=2, keyword="дела"))
-# session.add(SearchData(user_id=1, sticker_unique_id=2, keyword="так вот"))
-# session.add(SearchData(user_id=1, sticker_unique_id=3, keyword="привет",))
-# session.commit()
-# print(Search("привет", user_id=1).results)

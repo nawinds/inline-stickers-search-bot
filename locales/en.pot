@@ -1,0 +1,82 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Inline stickers bot\n"
+"POT-Creation-Date: 2023-07-17 12:22+0300\n"
+"PO-Revision-Date: 2023-07-17 12:24+0300\n"
+"Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
+"Language-Team: Nikita Aksenov\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Poedit-KeywordsList: i18n.get(%)\n"
+"X-Poedit-SearchPath-0: data\n"
+"X-Poedit-SearchPath-1: handlers\n"
+"X-Poedit-SearchPath-2: instances.py\n"
+"X-Poedit-SearchPath-3: main.py\n"
+"X-Poedit-SearchPath-4: search.py\n"
+
+#: handlers/callbacks.py:24
+msgid "add_set.cancelled"
+msgstr "Set adding cancelled"
+
+#: handlers/callbacks.py:31 handlers/callbacks.py:54
+msgid "add_set.not_found"
+msgstr "Sorry, this set no longer exists"
+
+#: handlers/callbacks.py:34
+msgid "add_set.adding"
+msgstr "Adding the set..."
+
+#: handlers/callbacks.py:41
+msgid "add_set.notification"
+msgstr "Your *$title* set was added by someone"
+
+#: handlers/callbacks.py:44
+msgid "added"
+msgstr "Set successfully added!"
+
+#: handlers/callbacks.py:69 handlers/callbacks.py:96
+msgid "disable"
+msgstr "Turn off"
+
+#: handlers/callbacks.py:71 handlers/callbacks.py:96
+msgid "enable"
+msgstr "Turn on"
+
+#: handlers/callbacks.py:72
+msgid "share.notifications"
+msgstr " notifications"
+
+#: handlers/callbacks.py:77
+msgid ".share.link_text"
+msgstr ""
+"Here is a link for adding the {title} set. You can now share it with your "
+"friends.\n"
+"\n"
+"https://t.me/{username}?start=add\\_set-{code}\n"
+"\n"
+"*If you would like to receive notifications when someone adds your set, tap "
+"the button below.* You can view a full list \n"
+"of your links by sending /links command"
+
+#: handlers/callbacks.py:88
+msgid "share.link_not_found"
+msgstr "Sorry, this link no longer exists"
+
+#: handlers/callbacks.py:102
+msgid "share.notifications_capitalized"
+msgstr "Notifications "
+
+#: handlers/callbacks.py:103
+msgid "share.enabed"
+msgstr "enabled"
+
+#: handlers/callbacks.py:103
+msgid "share.disabed"
+msgstr "disabled"
+
+#~ msgid "notification.not_found"
+#~ msgstr "Your *$title* set was added by someone"

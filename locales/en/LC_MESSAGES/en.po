@@ -1,0 +1,238 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Inline stickers bot\n"
+"POT-Creation-Date: 2023-07-18 18:55+0300\n"
+"PO-Revision-Date: 2023-07-18 18:57+0300\n"
+"Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
+"Language-Team: Nikita Aksenov\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Poedit-KeywordsList: i18n.get(%)\n"
+"X-Poedit-SearchPath-0: data\n"
+"X-Poedit-SearchPath-1: handlers\n"
+"X-Poedit-SearchPath-2: instances.py\n"
+"X-Poedit-SearchPath-3: main.py\n"
+"X-Poedit-SearchPath-4: search.py\n"
+
+#: handlers/callbacks.py:25
+msgid "callbacks.add_set.cancelled"
+msgstr "Set adding cancelled"
+
+#: handlers/callbacks.py:32 handlers/callbacks.py:55
+msgid "callbacks.global.set_not_found"
+msgstr "Sorry, this set no longer exists"
+
+#: handlers/callbacks.py:35
+msgid "callbacks.add_set.adding"
+msgstr "Adding set..."
+
+#: handlers/callbacks.py:42
+msgid "callbacks.add_set.notification"
+msgstr "Your *{title}* set was added by someone"
+
+#: handlers/callbacks.py:45
+msgid "callbacks.add_set.added"
+msgstr "Set was added successfully!"
+
+#: handlers/callbacks.py:70 handlers/callbacks.py:98
+msgid "callbacks.global.disable"
+msgstr "Turn off"
+
+#: handlers/callbacks.py:72 handlers/callbacks.py:98
+msgid "callbacks.global.enable"
+msgstr "Turn on"
+
+#: handlers/callbacks.py:73 handlers/callbacks.py:99
+msgid "callbacks.global.notifications"
+msgstr " notifications"
+
+#: handlers/callbacks.py:78
+msgid "callbacks.share_set.link_text"
+msgstr ""
+"Here is a link for adding the {title} set. You can now share it with your "
+"friends.\n"
+"\n"
+"https://t.me/{username}?start=add\\_set-{code}\n"
+"\n"
+"*You can receive notifications when someone adds your set. To enable/disable "
+"them, just tap the button below*"
+
+#: handlers/callbacks.py:90
+msgid "callbacks.notifications.link_not_found"
+msgstr "Sorry, this link no longer exists"
+
+#: handlers/callbacks.py:105 handlers/callbacks.py:107
+msgid "callbacks.notifications.notifications_capitalized"
+msgstr "Notifications "
+
+#: handlers/callbacks.py:106
+msgid "callbacks.notifications.enabed"
+msgstr "enabled"
+
+#: handlers/callbacks.py:107
+msgid "callbacks.notifications.disabed"
+msgstr "disabled"
+
+#: handlers/commands.py:30
+msgid "commands.start_deep.not_found"
+msgstr ""
+"You used a link to add a new set, but the specified link does not exist"
+
+#: handlers/commands.py:34
+msgid "commands.start_deep.yes"
+msgstr "Yes, add this set"
+
+#: handlers/commands.py:36
+msgid "commands.start_deep.no"
+msgstr "No, thanks"
+
+#: handlers/commands.py:39
+msgid "commands.start_deep.reply_text"
+msgstr ""
+"You used a link to add a *{link_set_title}* set. Are you sure you want to "
+"continue?"
+
+#: handlers/commands.py:46
+msgid "commands.start.hello_text"
+msgstr ""
+"Hi!\n"
+"This bot will help you find your stickers in inline mode. At first you "
+"should provide descriptions for every sticker you want to add to search "
+"results.\n"
+"\n"
+"*/new — add sticker to search index. Use this command if you want to add a "
+"description for sticker.*\n"
+"\n"
+"Stickers\\' descriptions are collected into _sticker sets_. By default, "
+"stickers are kept in a default sticker set, unique for every user.\n"
+"\n"
+"*/set — create a new sticker set (you will be asked to send stickers and "
+"descriptions for it)*.\n"
+"\n"
+"You can share all your sticker sets except for the default set with other "
+"users by sending them the link to add your sticker set.\n"
+"\n"
+"*/share — create a link for sharing a sticker set.*\n"
+"\n"
+"To search for a sticker in any Telegram chat, just type \"@{username}\" in "
+"the message input field and start typing your query. Sticker suggestions "
+"will appear above if there are any.\n"
+"\n"
+"*/help — all available bot commands.*\n"
+"\n"
+"_If you have any questions or suggestions, feel free to contact @nawinds!_\n"
+"\n"
+"[Source code of this bot](https://github.com/nawinds/inline-stickers-search-"
+"bot)"
+
+#: handlers/commands.py:52
+msgid "commands.help.help_text"
+msgstr ""
+"Here is a list of available bot commands:\n"
+"\n"
+"/new — add sticker to search index. Use this command if you want to add a "
+"description for sticker.\n"
+"/set — create a new sticker set (you will be asked to send stickers and "
+"descriptions for it).\n"
+"/share — create a link for sharing a sticker set.\n"
+"/help — all available bot commands.\n"
+"\n"
+"_If you have any questions or suggestions, feel free to contact @nawinds!_\n"
+"\n"
+"[Source code of this bot](https://github.com/nawinds/inline-stickers-search-"
+"bot)"
+
+#: handlers/commands.py:59
+msgid "commands.new"
+msgstr ""
+"Please send a sticker to add it to search results.\n"
+"_To cancel adding a sticker, send /cancel_"
+
+#: handlers/commands.py:66
+msgid "commands.set"
+msgstr ""
+"Please send a title for the new set.\n"
+"_To cancel creating the set, send /cancel_"
+
+#: handlers/commands.py:101
+msgid "commands.process_set_prompt_finish.default_saved"
+msgstr "Sticker saved"
+
+#: handlers/commands.py:104
+msgid "commands.process_set_prompt_finish.sticker_saved"
+msgstr ""
+"Sticker saved. Now send another sticker. If you don't want to add another "
+"sticker to this set, send /finish_set"
+
+#: handlers/commands.py:110
+msgid "commands.finish_set"
+msgstr "Ok. Your set is now saved"
+
+#: handlers/commands.py:116
+msgid "commands.cancel"
+msgstr "Action cancelled"
+
+#: handlers/commands.py:130
+msgid "commands.share.no_sets"
+msgstr ""
+"You don't have sticker sets that you can share. Create one with /set command"
+
+#: handlers/commands.py:132
+msgid "commands.share.choose"
+msgstr ""
+"Please choose a sticker set you would like to share and I will generate a "
+"link"
+
+#: handlers/data_processing.py:19
+msgid "data_processing.set_title.limit"
+msgstr "This title exceeds 50 characters. Please, try again"
+
+#: handlers/data_processing.py:27
+msgid "data_processing.set_title.success"
+msgstr "Sticker set created! Please send the first sticker for your new set"
+
+#: handlers/data_processing.py:35
+msgid "data_processing.set_sticker"
+msgstr "Send a prompt for this sticker"
+
+#: handlers/data_processing.py:42
+msgid "data_processing.set_prompt.limit"
+msgstr "This prompt exceeds 1000 characters. Please, try again"
+
+#: handlers/data_processing.py:55
+msgid "data_processing.set_prompt.success"
+msgstr "Send another prompt for this sticker. To finish, send /finish"
+
+#~ msgid "callbacks.share_set.notifications"
+#~ msgstr " notifications"
+
+#~ msgid "share.notifications_capitalized"
+#~ msgstr "Notifications "
+
+#~ msgid "share.enabed"
+#~ msgstr "enabled"
+
+#~ msgid "share.disabed"
+#~ msgstr "disabled"
+
+#~ msgid "disable"
+#~ msgstr "Turn off"
+
+#~ msgid "enable"
+#~ msgstr "Turn on"
+
+#~ msgid "share.link_not_found"
+#~ msgstr "Sorry, this link no longer exists"
+
+#~ msgid "share.notifications"
+#~ msgstr "Your *{title}* set was added by someone"
+
+#~ msgid "added"
+#~ msgstr "Set successfully added!"
+
+#~ msgid "add_set.adding"
+#~ msgstr "Adding the set..."

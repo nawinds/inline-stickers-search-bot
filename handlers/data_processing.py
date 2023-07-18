@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram import types, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
+from aiogram_i18n import I18nContext
 
 from data.db_session import create_session
 from data.sticker_sets import StickerSet
@@ -13,9 +14,9 @@ data_processing.message.filter(F.chat.type == "private")
 
 
 @data_processing.message(StateFilter(NewSetState.title))
-async def process_set_title(message: types.Message, state: FSMContext):
+async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext):
     if len(message.text) > 50:
-        await message.reply("This title exceeds 50 characters. Please, try again")
+        await message.reply(i18n.gettext("data_processing.set_title.limit"))
         return
     session = create_session()
     new_set = StickerSet(owner_id=message.from_user.id, title=message.text)
@@ -23,22 +24,22 @@ async def process_set_title(message: types.Message, state: FSMContext):
     session.commit()
     await state.update_data(title=message.text, set_id=new_set.id)
     await state.set_state(NewSetState.sticker)
-    await message.answer('Sticker set created! Please send the first sticker for your new set')
+    await message.answer(i18n.gettext("data_processing.set_title.success"))
 
 
 @data_processing.message(StateFilter(NewSetState.sticker), F.content_type == 'sticker')
-async def process_set_sticker(message: types.Message, state: FSMContext):
+async def set_sticker(message: types.Message, state: FSMContext, i18n: I18nContext):
     sticker_file = message.sticker.file_id
     sticker_unique_id = message.sticker.file_unique_id
     await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
-    await message.answer("Send a prompt for this sticker")
+    await message.answer(i18n.gettext("data_processing.set_sticker"))
     await state.set_state(NewSetState.prompt)
 
 
 @data_processing.message(StateFilter(NewSetState.prompt))
-async def process_set_prompt(message: types.Message, state: FSMContext):
+async def set_prompt(message: types.Message, state: FSMContext, i18n: I18nContext):
     if len(message.text) > 1000:
-        await message.reply("This prompt exceeds 1000 characters. Please, try again")
+        await message.reply(i18n.gettext("data_processing.set_prompt.limit"))
         return
     data = await state.get_data()
     prompts = data.get('prompts', [])
@@ -51,5 +52,5 @@ async def process_set_prompt(message: types.Message, state: FSMContext):
             known_words.append(i)
     with open("known_words.txt", "w", encoding="utf-8") as write_file:
         write_file.write(" ".join(known_words))
-    await message.answer("Send another prompt for this sticker. To finish, send /finish")
+    await message.answer(i18n.gettext("data_processing.set_prompt.success"))
     await state.set_state(NewSetState.prompt)
