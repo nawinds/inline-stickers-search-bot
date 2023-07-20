@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
-"POT-Creation-Date: 2023-07-18 18:55+0300\n"
-"PO-Revision-Date: 2023-07-18 20:36+0300\n"
+"POT-Creation-Date: 2023-07-19 12:58+0300\n"
+"PO-Revision-Date: 2023-07-19 12:59+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: ru\n"
@@ -175,41 +175,45 @@ msgstr "Ок. Сет сохранён"
 msgid "commands.cancel"
 msgstr "Действие отменено"
 
-#: handlers/commands.py:130
+#: handlers/commands.py:129
 msgid "commands.share.no_sets"
 msgstr ""
 "У Вас нет сетов стикеров, которыми можно поделиться. Создайте такой сет "
 "командой /set"
 
-#: handlers/commands.py:132
+#: handlers/commands.py:131
 msgid "commands.share.choose"
 msgstr ""
 "Пожалуйста, выберите сет стикеров, которым Вы хотите поделиться и я "
 "сгенерирую ссылку"
 
-#: handlers/data_processing.py:19
+#: handlers/data_processing.py:20
 msgid "data_processing.set_title.limit"
 msgstr ""
 "Название не должно быть длиннее 50 символов. Пожалуйста, попробуйте еще раз"
 
-#: handlers/data_processing.py:27
+#: handlers/data_processing.py:30
 msgid "data_processing.set_title.success"
 msgstr "Сет стикеров создан! Отправьте первый стикер для Вашего сета"
 
-#: handlers/data_processing.py:35
+#: handlers/data_processing.py:38
 msgid "data_processing.set_sticker"
 msgstr "Отправьте описание для этого стикера"
 
-#: handlers/data_processing.py:42
+#: handlers/data_processing.py:45
 msgid "data_processing.set_prompt.limit"
 msgstr ""
 "Описание не должно быть длиннее 1000 стикеров. Пожалуйста, попробуйте ещё раз"
 
-#: handlers/data_processing.py:55
+#: handlers/data_processing.py:58
 msgid "data_processing.set_prompt.success"
 msgstr ""
 "Отправьте еще одно описание для этого стикера. Если Вы не хотите добавлять "
 "больше описаний для стикера, воспользуйтесь командой /finish"
+
+#: handlers/inline.py:34
+msgid "inline.handle.not_found"
+msgstr "Добавить стикеры в поиск >>"
 
 #~ msgid "callbacks.share_set.notifications"
 #~ msgstr " уведомления"
@@ -228,9 +232,6 @@ msgstr ""
 
 #~ msgid "enable"
 #~ msgstr "Включить"
-
-#~ msgid "share.link_not_found"
-#~ msgstr "Извините, этой ссылки больше не существует"
 
 #~ msgid "share.notifications"
 #~ msgstr " уведомления"

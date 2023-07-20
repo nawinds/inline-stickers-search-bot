@@ -29,8 +29,7 @@ class Search:
         self.uid = user_id
         self.known_words = self.get_known_words()
         session = create_session()
-        self.user_set_list = session.query(UserSet.set_id).filter(UserSet.user_id == self.uid).first()
-        print(self.user_set_list)
+        self.user_set_list = [i[0] for i in session.query(UserSet.set_id).filter(UserSet.user_id == self.uid).all()]
 
     def get_results(self):
         return self.search_and_range()

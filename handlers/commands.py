@@ -21,7 +21,7 @@ commands.message.filter(F.chat.type == "private")
 I18nContext.gettext = I18nContext.get
 
 
-@commands.message(CommandStart(re.compile(r'add_set-([a-zA-Z]+)')))
+@commands.message(F.text.regexp(r'/start add_set-([a-zA-Z]+)'))
 async def cmd_start_add_set(message: types.Message, i18n: I18nContext):
     link_code = message.text.split("-")[1]
     session = create_session()
