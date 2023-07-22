@@ -1,5 +1,3 @@
-import re
-
 from aiogram import Router
 from aiogram import types, F
 from aiogram.filters import Command, CommandStart, StateFilter

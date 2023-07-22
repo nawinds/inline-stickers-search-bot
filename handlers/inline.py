@@ -30,7 +30,7 @@ async def handle_inline_query(query: InlineQuery, i18n: I18nContext):
 
         await query.answer(inline_results, cache_time=60, is_personal=True)
     else:
-        await query.answer([], cache_time=60, is_personal=True,
+        await query.answer([], cache_time=0, is_personal=True,
                            switch_pm_text=i18n.gettext("inline.handle.not_found"),
                            switch_pm_parameter="inline")
 
