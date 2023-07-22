@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
-"POT-Creation-Date: 2023-07-19 12:58+0300\n"
-"PO-Revision-Date: 2023-07-19 12:59+0300\n"
+"POT-Creation-Date: 2023-07-20 18:07+0300\n"
+"PO-Revision-Date: 2023-07-20 18:08+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: en\n"
@@ -22,35 +22,39 @@ msgstr ""
 msgid "callbacks.add_set.cancelled"
 msgstr "Set adding cancelled"
 
-#: handlers/callbacks.py:32 handlers/callbacks.py:55
+#: handlers/callbacks.py:32 handlers/callbacks.py:59
 msgid "callbacks.global.set_not_found"
 msgstr "Sorry, this set no longer exists"
 
-#: handlers/callbacks.py:35
+#: handlers/callbacks.py:36
+msgid "callbacks.add_set.already_added"
+msgstr "This set is already added to your account"
+
+#: handlers/callbacks.py:39
 msgid "callbacks.add_set.adding"
 msgstr "Adding set..."
 
-#: handlers/callbacks.py:42
+#: handlers/callbacks.py:46
 msgid "callbacks.add_set.notification"
 msgstr "Your *{title}* set was added by someone"
 
-#: handlers/callbacks.py:45
+#: handlers/callbacks.py:49
 msgid "callbacks.add_set.added"
 msgstr "Set was added successfully!"
 
-#: handlers/callbacks.py:70 handlers/callbacks.py:98
+#: handlers/callbacks.py:74 handlers/callbacks.py:102
 msgid "callbacks.global.disable"
 msgstr "Turn off"
 
-#: handlers/callbacks.py:72 handlers/callbacks.py:98
+#: handlers/callbacks.py:76 handlers/callbacks.py:102
 msgid "callbacks.global.enable"
 msgstr "Turn on"
 
-#: handlers/callbacks.py:73 handlers/callbacks.py:99
+#: handlers/callbacks.py:77 handlers/callbacks.py:103
 msgid "callbacks.global.notifications"
 msgstr " notifications"
 
-#: handlers/callbacks.py:78
+#: handlers/callbacks.py:82
 msgid "callbacks.share_set.link_text"
 msgstr ""
 "Here is a link for adding the {title} set. You can now share it with your "
@@ -61,19 +65,19 @@ msgstr ""
 "*You can receive notifications when someone adds your set. To enable/disable "
 "them, just tap the button below*"
 
-#: handlers/callbacks.py:90
+#: handlers/callbacks.py:94
 msgid "callbacks.notifications.link_not_found"
 msgstr "Sorry, this link no longer exists"
 
-#: handlers/callbacks.py:105 handlers/callbacks.py:107
+#: handlers/callbacks.py:109 handlers/callbacks.py:111
 msgid "callbacks.notifications.notifications_capitalized"
 msgstr "Notifications "
 
-#: handlers/callbacks.py:106
+#: handlers/callbacks.py:110
 msgid "callbacks.notifications.enabed"
 msgstr "enabled"
 
-#: handlers/callbacks.py:107
+#: handlers/callbacks.py:111
 msgid "callbacks.notifications.disabed"
 msgstr "disabled"
 

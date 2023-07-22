@@ -29,9 +29,13 @@ async def add_set(callback: types.CallbackQuery, i18n: I18nContext):
     session = create_session()
     sticker_set = session.get(StickerSet, set_id)
     if not sticker_set:
-        await callback.answer(i18n.gettext("callbacks.global.set_not_found"),
-                              show_alert=True)
+        await callback.answer(i18n.gettext("callbacks.global.set_not_found"), show_alert=True)
         return
+    if session.query(UserSet).filter(UserSet.user_id == callback.from_user.id,
+                                     UserSet.set_id == set_id).first():
+        await callback.answer(i18n.gettext("callbacks.add_set.already_added"), show_alert=True)
+        return
+
     await callback.answer(i18n.gettext("callbacks.add_set.adding"))
 
     sticker_set.user_sets.append(UserSet(user_id=callback.from_user.id))

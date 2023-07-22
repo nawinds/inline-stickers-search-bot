@@ -20,7 +20,7 @@ def summed_dict(lst: list):
 
 
 def clear_q(q):
-    return q.strip().lower().translate(str.maketrans('', '', string.punctuation))
+    return q.strip().lower().translate(str.maketrans('', '', string.punctuation)).replace("ё", "е")
 
 
 class Search:
