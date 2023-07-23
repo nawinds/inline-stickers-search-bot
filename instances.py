@@ -6,6 +6,7 @@ from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import TelegramObject
+from aiogram.utils.markdown import markdown_decoration, _join
 from aiogram_i18n.managers.fsm import FSMManager
 
 storage = MemoryStorage()
@@ -31,3 +32,7 @@ class CustomFSMManager(FSMManager):
             if state:
                 await state.update_data(data={self.key: locale})
         return locale
+
+
+def escape_md(*content, sep=" ") -> str:
+    return markdown_decoration.quote(_join(*content, sep=sep)).replace("\\.", ".")
