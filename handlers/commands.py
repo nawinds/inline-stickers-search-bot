@@ -13,6 +13,7 @@ from data.stickers import Sticker
 from data.user_sets import UserSet
 from instances import NewSetState
 from instances import bot
+from instances import escape_md
 
 commands = Router()
 commands.message.filter(F.chat.type == "private")
@@ -34,14 +35,14 @@ async def cmd_start_add_set(message: types.Message, i18n: I18nContext):
     builder.button(text=i18n.gettext("commands.start_deep.no"), callback_data="add_set-0")
     builder.adjust(1)
 
-    await message.answer(i18n.gettext("commands.start_deep.reply_text", link_set_title=link.set.title),
+    await message.answer(i18n.gettext("commands.start_deep.reply_text", link_set_title=escape_md(link.set.title)),
                          reply_markup=builder.as_markup(), parse_mode="markdown")
 
 
 @commands.message(CommandStart(), StateFilter(None))
 async def cmd_start(message: types.Message, i18n: I18nContext):
     bot_info = await bot.get_me()
-    await message.answer(i18n.gettext("commands.start.hello_text", username=bot_info.username),
+    await message.answer(i18n.gettext("commands.start.hello_text", username=escape_md(bot_info.username)),
                          parse_mode="markdown", disable_web_page_preview=True)
 
 

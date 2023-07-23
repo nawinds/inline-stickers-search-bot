@@ -1,4 +1,3 @@
-from string import Template
 
 from aiogram import Router
 from aiogram import types, F
@@ -11,6 +10,7 @@ from data.set_links import SetLink
 from data.sticker_sets import StickerSet
 from data.user_sets import UserSet
 from instances import bot
+from instances import escape_md
 
 callbacks = Router()
 callbacks.message.filter(F.chat.type == "private")
@@ -43,10 +43,10 @@ async def add_set(callback: types.CallbackQuery, i18n: I18nContext):
     if notifications:
         await bot.send_message(
             sticker_set.owner_id,
-            Template(i18n.gettext("callbacks.add_set.notification", title=sticker_set.title))
-            .substitute(title=sticker_set.title),
+            i18n.gettext("callbacks.add_set.notification", title=escape_md(sticker_set.title)),
             parse_mode="markdown")
-    await bot.send_message(callback.from_user.id, i18n.gettext("callbacks.add_set.added"))
+    await bot.send_message(callback.from_user.id, i18n.gettext("callbacks.add_set.added"),
+                           parse_mode="markdown")
 
 
 @callbacks.callback_query(lambda c: c.data.startswith("share_set-"), StateFilter("*"))
@@ -80,8 +80,8 @@ async def share_set(callback: types.CallbackQuery, i18n: I18nContext):
                                      f"{link.code}")
     await bot.send_message(callback.from_user.id,
                            i18n.gettext("callbacks.share_set.link_text",
-                                        title=sticker_set.title,
-                                        username=bot_info.username,
+                                        title=escape_md(sticker_set.title),
+                                        username=escape_md(bot_info.username),
                                         code=link.code), reply_markup=builder.as_markup(),
                            parse_mode="markdown")
 
