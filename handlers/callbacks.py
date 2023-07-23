@@ -6,7 +6,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_i18n import I18nContext
 
 from data.db_session import create_session
-from data.set_links import SetLink
+from data.set_links import SetLink, generate_code
 from data.sticker_sets import StickerSet
 from data.user_sets import UserSet
 from instances import bot
@@ -63,8 +63,8 @@ async def share_set(callback: types.CallbackQuery, i18n: I18nContext):
 
     link = session.query(SetLink).filter(SetLink.set_id == set_id).first()
     if not link:
-        link = SetLink()
-        sticker_set.set_links.append(link)
+        link = SetLink(set_id=sticker_set.id, code=generate_code())
+        session.add(link)
         session.commit()
 
     bot_info = await bot.get_me()
@@ -83,7 +83,7 @@ async def share_set(callback: types.CallbackQuery, i18n: I18nContext):
                                         title=escape_md(sticker_set.title),
                                         username=escape_md(bot_info.username),
                                         code=link.code), reply_markup=builder.as_markup(),
-                           parse_mode="markdown")
+                           parse_mode="markdown", disable_web_page_preview=True)
 
 
 async def notifications_toggle(callback: types.CallbackQuery, i18n: I18nContext, enable: bool):
