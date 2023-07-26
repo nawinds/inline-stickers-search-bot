@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram import types, F
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram_i18n import I18nContext
 
 from data.db_session import create_session
@@ -29,14 +29,17 @@ async def cmd_start_add_set(message: types.Message, i18n: I18nContext):
         await message.answer(i18n.gettext("commands.start_deep.not_found"))
         return
 
-    builder = InlineKeyboardBuilder()
-    builder.button(text=i18n.gettext("commands.start_deep.yes"),
-                   callback_data=f"add_set-{link.set_id},{int(link.notifications)}")
-    builder.button(text=i18n.gettext("commands.start_deep.no"), callback_data="add_set-0")
-    builder.adjust(1)
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[InlineKeyboardButton(text=i18n.gettext("commands.start_deep.yes"),
+                                               callback_data=f"add_set-{link.set_id},{int(link.notifications)}"),
+                          InlineKeyboardButton(text=i18n.gettext("commands.start_deep.no"),
+                                               callback_data="add_set-0")]],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
 
     await message.answer(i18n.gettext("commands.start_deep.reply_text", link_set_title=escape_md(link.set.title)),
-                         reply_markup=builder.as_markup(), parse_mode="markdown")
+                         reply_markup=keyboard, parse_mode="markdown")
 
 
 @commands.message(CommandStart(), StateFilter(None))
@@ -64,6 +67,33 @@ async def cmd_set(message: types.Message, state: FSMContext, i18n: I18nContext):
     await state.set_state(NewSetState.title)
     await message.answer(i18n.gettext("commands.set"),
                          parse_mode="markdown")
+
+
+@commands.message(Command('pack'), StateFilter(None))
+async def cmd_pack(message: types.Message, state: FSMContext, i18n: I18nContext):
+    await state.set_state(NewSetState.sticker)
+    await state.update_data(set_base_type="pack")
+    await message.answer(i18n.gettext("commands.pack"),
+                         parse_mode="markdown")
+
+
+@commands.message(Command('skip'), NewSetState.prompt)
+async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18n: I18nContext):
+    data = await state.get_data()
+    if data.get('set_base_type') == "pack":
+        sticker_pack = await bot.get_sticker_set(data.get("pack_name"))
+        pack_stickers = sticker_pack.stickers
+        if len(pack_stickers) > int(data.get("next_sticker")):
+            await message.answer(i18n.gettext("commands.process_set_prompt_skip.pack"))
+            await message.answer_sticker(pack_stickers[int(data.get("next_sticker"))].file_id)
+            await state.update_data(next_sticker=int(data.get("next_sticker")) + 1)
+            sticker_file = pack_stickers[int(data.get("next_sticker"))].file_id
+            sticker_unique_id = pack_stickers[int(data.get("next_sticker"))].file_unique_id
+            await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
+        else:
+            await state.clear()
+            await message.answer(i18n.gettext("commands.process_set_prompt_skip.finish_set"))
+        return
 
 
 @commands.message(Command('finish'), NewSetState.prompt)
@@ -99,6 +129,17 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext, i
         await state.clear()
         await message.answer(i18n.gettext("commands.process_set_prompt_finish.default_saved"))
     else:
+        if data.get('set_base_type') == "pack":
+            await message.answer(i18n.gettext("commands.process_set_prompt_finish.pack"))
+            sticker_pack = await bot.get_sticker_set(data.get("pack_name"))
+            pack_stickers = sticker_pack.stickers
+            await message.answer_sticker(pack_stickers[int(data.get("next_sticker"))].file_id)
+            await state.update_data(next_sticker=int(data.get("next_sticker")) + 1)
+            sticker_file = pack_stickers[int(data.get("next_sticker"))].file_id
+            sticker_unique_id = pack_stickers[int(data.get("next_sticker"))].file_unique_id
+            await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
+            await state.set_state(NewSetState.prompt)
+            return
         await state.set_state(NewSetState.sticker)
         await message.answer(i18n.gettext("commands.process_set_prompt_finish.sticker_saved"))
 
@@ -117,15 +158,16 @@ async def cmd_cancel(message: types.Message, state: FSMContext, i18n: I18nContex
 
 @commands.message(Command('share'))
 async def cmd_share(message: types.Message, i18n: I18nContext):
-    builder = InlineKeyboardBuilder()
     sets = create_session().query(StickerSet). \
         filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False).all()
-    for sticker_set in sets:
-        builder.button(text=sticker_set.title, callback_data=f"share_set-{sticker_set.id}")
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[InlineKeyboardButton(text=sticker_set.title,
+                                               callback_data=f"share_set-{sticker_set.id}")]
+                         for sticker_set in sets]
+    )
 
-    builder.adjust(1)
     if not sets:
         await message.answer(i18n.gettext("commands.share.no_sets"))
         return
     await message.answer(i18n.gettext("commands.share.choose"),
-                         reply_markup=builder.as_markup(), parse_mode="markdown")
+                         reply_markup=keyboard, parse_mode="markdown")

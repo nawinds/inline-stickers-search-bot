@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
-"POT-Creation-Date: 2023-07-20 18:07+0300\n"
-"PO-Revision-Date: 2023-07-24 00:16+0300\n"
+"POT-Creation-Date: 2023-07-26 12:14+0300\n"
+"PO-Revision-Date: 2023-07-26 12:15+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: ru\n"
@@ -38,7 +38,7 @@ msgstr "Добавление сета..."
 msgid "callbacks.add_set.notification"
 msgstr "Ваш сет *{title}* был кем-то добавлен"
 
-#: handlers/callbacks.py:49
+#: handlers/callbacks.py:48
 msgid "callbacks.add_set.added"
 msgstr "Сет успешно добавлен!"
 
@@ -81,27 +81,27 @@ msgstr "включены"
 msgid "callbacks.notifications.disabed"
 msgstr "выключены"
 
-#: handlers/commands.py:30
+#: handlers/commands.py:29
 msgid "commands.start_deep.not_found"
 msgstr ""
 "Вы использовали ссылку для добавления нового сета, но указанная ссылка не "
 "существует"
 
-#: handlers/commands.py:34
+#: handlers/commands.py:33
 msgid "commands.start_deep.yes"
 msgstr "Да, добавить этот сет"
 
-#: handlers/commands.py:36
+#: handlers/commands.py:35
 msgid "commands.start_deep.no"
 msgstr "Нет, спасибо"
 
-#: handlers/commands.py:39
+#: handlers/commands.py:41
 msgid "commands.start_deep.reply_text"
 msgstr ""
 "Вы использовали ссылку для добавления сета *{link_set_title}*. Вы уверены, "
 "что хотите продолжить?"
 
-#: handlers/commands.py:46
+#: handlers/commands.py:48
 msgid "commands.start.hello_text"
 msgstr ""
 "Привет!\n"
@@ -133,7 +133,7 @@ msgstr ""
 "\n"
 "[Исходный код бота](https://github.com/nawinds/inline-stickers-search-bot)"
 
-#: handlers/commands.py:52
+#: handlers/commands.py:54
 msgid "commands.help.help_text"
 msgstr ""
 "Ниже список доступных команд:\n"
@@ -149,67 +149,106 @@ msgstr ""
 "\n"
 "[Исходный код бота](https://github.com/nawinds/inline-stickers-search-bot)"
 
-#: handlers/commands.py:59
+#: handlers/commands.py:61
 msgid "commands.new"
 msgstr ""
 "Пожалуйста, отправьте стикер, чтобы добавить его в поисковую выдачу.\n"
 "_Чтобы отменить добавление стикера, отправьте /cancel_"
 
-#: handlers/commands.py:66
+#: handlers/commands.py:68
 msgid "commands.set"
 msgstr ""
 "Придумайте название для своего нового сета.\n"
 "_Чтобы отменить создание сета, отправьте /cancel_"
 
-#: handlers/commands.py:101
+#: handlers/commands.py:76
+msgid "commands.pack"
+msgstr ""
+"Пришлите один стикер из стикерпака, который Вы хотите добавить.\n"
+"_Чтобы отменить создание сета, отправьте /cancel_"
+
+#: handlers/commands.py:84
+msgid "commands.process_set_prompt_skip.pack"
+msgstr ""
+"Стикер пропущен. Теперь отправьте описание для стикера ниже. \n"
+"Если Вы хотите пропустить этот стикер и не добавлять его в стикерпак, "
+"отправьте /skip. \n"
+"Если Вы больше не хотите добавлять стикеры в этот сет, отправьте /finish_set"
+
+#: handlers/commands.py:95
+msgid "commands.process_set_prompt_skip.finish_set"
+msgstr "Больше стикеров в этом стикерпаке нет. Сет сохранён!"
+
+#: handlers/commands.py:130
 msgid "commands.process_set_prompt_finish.default_saved"
 msgstr "Стикер сохранён"
 
-#: handlers/commands.py:104
+#: handlers/commands.py:133
+msgid "commands.process_set_prompt_finish.pack"
+msgstr ""
+"Стикер сохранён. Теперь отправьте описание для стикера ниже. \n"
+"Если Вы хотите пропустить этот стикер и не добавлять его в стикерпак, "
+"отправьте /skip. \n"
+"Если Вы больше не хотите добавлять стикеры в этот сет, отправьте /finish_set"
+
+#: handlers/commands.py:144
 msgid "commands.process_set_prompt_finish.sticker_saved"
 msgstr ""
 "Стикер сохранён. Теперь отправьте следующий стикер. Если Вы больше не хотите "
 "добавлять стикеры в этот сет, отправьте /finish_set"
 
-#: handlers/commands.py:110
+#: handlers/commands.py:150
 msgid "commands.finish_set"
 msgstr "Ок. Сет сохранён"
 
-#: handlers/commands.py:116
+#: handlers/commands.py:156
 msgid "commands.cancel"
 msgstr "Действие отменено"
 
-#: handlers/commands.py:129
+#: handlers/commands.py:170
 msgid "commands.share.no_sets"
 msgstr ""
 "У Вас нет сетов стикеров, которыми можно поделиться. Создайте такой сет "
 "командой /set"
 
-#: handlers/commands.py:131
+#: handlers/commands.py:172
 msgid "commands.share.choose"
 msgstr ""
 "Пожалуйста, выберите сет стикеров, которым Вы хотите поделиться и я "
 "сгенерирую ссылку"
 
-#: handlers/data_processing.py:20
+#: handlers/data_processing.py:22
 msgid "data_processing.set_title.limit"
 msgstr ""
 "Название не должно быть длиннее 50 символов. Пожалуйста, попробуйте еще раз"
 
-#: handlers/data_processing.py:30
+#: handlers/data_processing.py:33
+msgid "data_processing.set_title.pack"
+msgstr ""
+"Сет стикеров создан! Теперь я буду по очереди присылать Вам стикеры из "
+"стикерпака. Ниже пришлю первый стикер. Пожалуйста, придумайте описание для "
+"него.\n"
+"Если Вы хотите пропустить этот стикер и не добавлять его в стикерпак, "
+"отправьте /skip."
+
+#: handlers/data_processing.py:44
 msgid "data_processing.set_title.success"
 msgstr "Сет стикеров создан! Отправьте первый стикер для Вашего сета"
 
-#: handlers/data_processing.py:38
+#: handlers/data_processing.py:59
+msgid "data_processing.set_sticker.pack"
+msgstr "Придумайте описание для этого сета стикеров"
+
+#: handlers/data_processing.py:66
 msgid "data_processing.set_sticker"
 msgstr "Отправьте описание для этого стикера"
 
-#: handlers/data_processing.py:45
+#: handlers/data_processing.py:72
 msgid "data_processing.set_prompt.limit"
 msgstr ""
 "Описание не должно быть длиннее 1000 стикеров. Пожалуйста, попробуйте ещё раз"
 
-#: handlers/data_processing.py:58
+#: handlers/data_processing.py:85
 msgid "data_processing.set_prompt.success"
 msgstr ""
 "Отправьте еще одно описание для этого стикера. Если Вы не хотите добавлять "
