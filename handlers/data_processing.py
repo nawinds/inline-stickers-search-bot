@@ -8,6 +8,7 @@ from aiogram_i18n import I18nContext
 from data.db_session import create_session
 from data.sticker_sets import StickerSet
 from data.user_sets import UserSet
+from handlers.commands import send_next_pack_sticker
 from instances import NewSetState
 from instances import bot
 from search import clear_q
@@ -33,11 +34,8 @@ async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext
         await message.answer(i18n.gettext("data_processing.set_title.pack"))
         sticker_pack = await bot.get_sticker_set(data.get("pack_name"))
         pack_stickers = sticker_pack.stickers
-        await message.answer_sticker(pack_stickers[0].file_id)
-        await state.update_data(next_sticker=1)
-        sticker_file = pack_stickers[0].file_id
-        sticker_unique_id = pack_stickers[0].file_unique_id
-        await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
+        await state.update_data(next_sticker=0)
+        await send_next_pack_sticker(message, state, pack_stickers)
         await state.set_state(NewSetState.prompt)
         return
     await state.set_state(NewSetState.sticker)

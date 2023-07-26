@@ -77,6 +77,15 @@ async def cmd_pack(message: types.Message, state: FSMContext, i18n: I18nContext)
                          parse_mode="markdown")
 
 
+async def send_next_pack_sticker(message, state, pack_stickers):
+    data = await state.get_data()
+    await message.answer_sticker(pack_stickers[int(data.get("next_sticker"))].file_id)
+    sticker_file = pack_stickers[int(data.get("next_sticker"))].file_id
+    sticker_unique_id = pack_stickers[int(data.get("next_sticker"))].file_unique_id
+    await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id,
+                            next_sticker=int(data.get("next_sticker")) + 1)
+
+
 @commands.message(Command('skip'), NewSetState.prompt)
 async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18n: I18nContext):
     data = await state.get_data()
@@ -85,14 +94,10 @@ async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18
         pack_stickers = sticker_pack.stickers
         if len(pack_stickers) > int(data.get("next_sticker")):
             await message.answer(i18n.gettext("commands.process_set_prompt_skip.pack"))
-            await message.answer_sticker(pack_stickers[int(data.get("next_sticker"))].file_id)
-            await state.update_data(next_sticker=int(data.get("next_sticker")) + 1)
-            sticker_file = pack_stickers[int(data.get("next_sticker"))].file_id
-            sticker_unique_id = pack_stickers[int(data.get("next_sticker"))].file_unique_id
-            await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
+            await send_next_pack_sticker(message, state, pack_stickers)
             return
-        await state.clear()
         await message.answer(i18n.gettext("commands.process_set_prompt_skip.finish_set"))
+        await state.clear()
 
 
 @commands.message(Command('finish'), NewSetState.prompt)
@@ -129,19 +134,14 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext, i
         await message.answer(i18n.gettext("commands.process_set_prompt_finish.default_saved"))
     else:
         if data.get('set_base_type') == "pack":
-            await message.answer(i18n.gettext("commands.process_set_prompt_finish.pack"))
             sticker_pack = await bot.get_sticker_set(data.get("pack_name"))
             pack_stickers = sticker_pack.stickers
             if len(pack_stickers) > int(data.get("next_sticker")):
-                await message.answer_sticker(pack_stickers[int(data.get("next_sticker"))].file_id)
-                await state.update_data(next_sticker=int(data.get("next_sticker")) + 1)
-                sticker_file = pack_stickers[int(data.get("next_sticker"))].file_id
-                sticker_unique_id = pack_stickers[int(data.get("next_sticker"))].file_unique_id
-                await state.update_data(sticker_file=sticker_file, sticker_unique_id=sticker_unique_id)
-                await state.set_state(NewSetState.prompt)
+                await message.answer(i18n.gettext("commands.process_set_prompt_finish.pack"))
+                await send_next_pack_sticker(message, state, pack_stickers)
             else:
-                await state.clear()
                 await message.answer(i18n.gettext("commands.process_set_prompt_skip.finish_set"))
+                await state.clear()
             return
         await state.set_state(NewSetState.sticker)
         await message.answer(i18n.gettext("commands.process_set_prompt_finish.sticker_saved"))
