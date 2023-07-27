@@ -1,3 +1,5 @@
+from typing import List
+
 from aiogram import Router
 from aiogram import types, F
 from aiogram.filters import Command, CommandStart, StateFilter
@@ -5,15 +7,15 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram_i18n import I18nContext
 
-from data.db_session import create_session
-from data.search_data import SearchData
-from data.set_links import SetLink
-from data.sticker_sets import StickerSet
-from data.stickers import Sticker
-from data.user_sets import UserSet
 from instances import NewSetState
 from instances import bot
 from instances import escape_md
+from models.db_session import create_session
+from models.search_data import SearchData
+from models.set_links import SetLink
+from models.sticker_sets import StickerSet
+from models.stickers import Sticker
+from models.user_sets import UserSet
 
 commands = Router()
 commands.message.filter(F.chat.type == "private")
@@ -21,7 +23,7 @@ I18nContext.gettext = I18nContext.get
 
 
 @commands.message(F.text.regexp(r'/start add_set-([a-zA-Z]+)'))
-async def cmd_start_add_set(message: types.Message, i18n: I18nContext):
+async def cmd_start_add_set(message: types.Message, i18n: I18nContext) -> None:
     link_code = message.text.split("-")[1]
     session = create_session()
     link = session.query(SetLink).filter(SetLink.code == link_code).first()
@@ -43,41 +45,42 @@ async def cmd_start_add_set(message: types.Message, i18n: I18nContext):
 
 
 @commands.message(CommandStart(), StateFilter(None))
-async def cmd_start(message: types.Message, i18n: I18nContext):
+async def cmd_start(message: types.Message, i18n: I18nContext) -> None:
     bot_info = await bot.get_me()
     await message.answer(i18n.gettext("commands.start.hello_text", username=escape_md(bot_info.username)),
                          parse_mode="markdown", disable_web_page_preview=True)
 
 
 @commands.message(Command('help'), StateFilter(None))
-async def cmd_help(message: types.Message, i18n: I18nContext):
+async def cmd_help(message: types.Message, i18n: I18nContext) -> None:
     await message.answer(i18n.gettext("commands.help.help_text"),
                          parse_mode="markdown", disable_web_page_preview=True)
 
 
 @commands.message(Command('new'), StateFilter(None))
-async def cmd_new(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def cmd_new(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     await state.set_state(NewSetState.sticker)
     await message.answer(i18n.gettext("commands.new"),
                          parse_mode="markdown")
 
 
 @commands.message(Command('set'), StateFilter(None))
-async def cmd_set(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def cmd_set(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     await state.set_state(NewSetState.title)
     await message.answer(i18n.gettext("commands.set"),
                          parse_mode="markdown")
 
 
 @commands.message(Command('pack'), StateFilter(None))
-async def cmd_pack(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def cmd_pack(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     await state.set_state(NewSetState.sticker)
     await state.update_data(set_base_type="pack")
     await message.answer(i18n.gettext("commands.pack"),
                          parse_mode="markdown")
 
 
-async def send_next_pack_sticker(message, state, pack_stickers):
+async def send_next_pack_sticker(message: types.Message, state: FSMContext,
+                                 pack_stickers: List[types.sticker.Sticker]) -> None:
     data = await state.get_data()
     await message.answer_sticker(pack_stickers[int(data.get("next_sticker"))].file_id)
     sticker_file = pack_stickers[int(data.get("next_sticker"))].file_id
@@ -87,7 +90,7 @@ async def send_next_pack_sticker(message, state, pack_stickers):
 
 
 @commands.message(Command('skip'), NewSetState.prompt)
-async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     data = await state.get_data()
     if data.get('set_base_type') == "pack":
         sticker_pack = await bot.get_sticker_set(data.get("pack_name"))
@@ -101,7 +104,7 @@ async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18
 
 
 @commands.message(Command('finish'), NewSetState.prompt)
-async def process_set_prompt_finish(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def process_set_prompt_finish(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     data = await state.get_data()
     sticker_unique_id = data.get('sticker_unique_id')
     sticker_file_id = data.get('sticker_file')
@@ -148,19 +151,19 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext, i
 
 
 @commands.message(Command('finish_set'), NewSetState.sticker)
-async def cmd_finish_set(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def cmd_finish_set(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     await state.clear()
     await message.answer(i18n.gettext("commands.finish_set"))
 
 
 @commands.message(Command('cancel'), StateFilter(NewSetState))
-async def cmd_cancel(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def cmd_cancel(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     await state.clear()
     await message.reply(i18n.gettext("commands.cancel"))
 
 
 @commands.message(Command('share'))
-async def cmd_share(message: types.Message, i18n: I18nContext):
+async def cmd_share(message: types.Message, i18n: I18nContext) -> None:
     sets = create_session().query(StickerSet). \
         filter(StickerSet.owner_id == message.from_user.id, StickerSet.default == False).all()
     keyboard = InlineKeyboardMarkup(

@@ -13,7 +13,7 @@ I18nContext.gettext = I18nContext.get
 
 
 @inline.inline_query(StateFilter("*"))
-async def handle_inline_query(query: InlineQuery, i18n: I18nContext):
+async def handle_inline_query(query: InlineQuery, i18n: I18nContext) -> None:
     q = query.query
     start = time()
     results = Search(q, query.from_user.id).get_results()
@@ -36,5 +36,5 @@ async def handle_inline_query(query: InlineQuery, i18n: I18nContext):
 
 
 @inline.chosen_inline_result(StateFilter("*"))
-async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult):
+async def handle_chosen_inline_query(chosen_inline_result: ChosenInlineResult) -> None:
     logging.info("Chosen result with id %s", chosen_inline_result.result_id)

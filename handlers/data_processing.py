@@ -5,9 +5,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram_i18n import I18nContext
 
-from data.db_session import create_session
-from data.sticker_sets import StickerSet
-from data.user_sets import UserSet
+from models.db_session import create_session
+from models.sticker_sets import StickerSet
+from models.user_sets import UserSet
 from handlers.commands import send_next_pack_sticker
 from instances import NewSetState
 from instances import bot
@@ -18,7 +18,7 @@ data_processing.message.filter(F.chat.type == "private")
 
 
 @data_processing.message(StateFilter(NewSetState.title))
-async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     if len(message.text) > 50:
         await message.reply(i18n.gettext("data_processing.set_title.limit"))
         return
@@ -43,7 +43,7 @@ async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext
 
 
 @data_processing.message(StateFilter(NewSetState.sticker), F.content_type == 'sticker')
-async def set_sticker(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def set_sticker(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     data = await state.get_data()
     if data.get('set_base_type') == "pack":
         await state.set_state(NewSetState.title)
@@ -65,7 +65,7 @@ async def set_sticker(message: types.Message, state: FSMContext, i18n: I18nConte
 
 
 @data_processing.message(StateFilter(NewSetState.prompt))
-async def set_prompt(message: types.Message, state: FSMContext, i18n: I18nContext):
+async def set_prompt(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     if len(message.text) > 1000:
         await message.reply(i18n.gettext("data_processing.set_prompt.limit"))
         return
@@ -73,12 +73,12 @@ async def set_prompt(message: types.Message, state: FSMContext, i18n: I18nContex
     prompts = data.get('prompts', [])
     new_prompt = clear_q(message.text)
     await state.update_data(prompts=prompts + [new_prompt])
-    with open("known_words.txt", encoding="utf-8") as read_file:
-        known_words = read_file.read().split()
+    with open("data/dictionary.txt", encoding="utf-8") as read_file:
+        dictionary = read_file.read().split()
     for i in new_prompt.split():
-        if i not in known_words:
-            known_words.append(i)
-    with open("known_words.txt", "w", encoding="utf-8") as write_file:
-        write_file.write(" ".join(known_words))
+        if i not in dictionary:
+            dictionary.append(i)
+    with open("data/dictionary.txt", "w", encoding="utf-8") as write_file:
+        write_file.write(" ".join(dictionary))
     await message.answer(i18n.gettext("data_processing.set_prompt.success"))
     await state.set_state(NewSetState.prompt)

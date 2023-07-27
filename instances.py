@@ -34,5 +34,5 @@ class CustomFSMManager(FSMManager):
         return locale
 
 
-def escape_md(*content, sep=" ") -> str:
+def escape_md(*content, sep: str = " ") -> str:
     return markdown_decoration.quote(_join(*content, sep=sep)).replace("\\.", ".")
