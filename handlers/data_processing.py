@@ -21,6 +21,10 @@ async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext
         await message.reply(i18n.gettext("data_processing.set_title.limit"))
         return
     session = create_session()
+    existing = session.query(StickerSet).filter(StickerSet.title == message.text).first()
+    if existing:
+        await message.reply(i18n.gettext("data_processing.set_title.existing"))
+        return
     new_set = StickerSet(owner_id=message.from_user.id, title=message.text)
     session.add(new_set)
     session.commit()
