@@ -9,6 +9,8 @@ from aiogram.types import TelegramObject
 from aiogram.utils.markdown import markdown_decoration, _join
 from aiogram_i18n.managers.fsm import FSMManager
 
+PRODUCTION = bool(int(getenv("PRODUCTION", 1)))
+
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 bot = Bot(token=getenv("TOKEN"))
