@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
 "POT-Creation-Date: 2023-07-26 12:14+0300\n"
-"PO-Revision-Date: 2023-07-26 12:26+0300\n"
+"PO-Revision-Date: 2023-07-27 15:25+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: en\n"
@@ -20,8 +20,7 @@ msgstr ""
 
 #: handlers/callbacks.py:25
 msgid "callbacks.add_set.cancelled"
-msgstr ""
-"There are no more stickers in this sticker pack. Your set is now saved!"
+msgstr "Set adding cancelled"
 
 #: handlers/callbacks.py:32 handlers/callbacks.py:59
 msgid "callbacks.global.set_not_found"
@@ -176,16 +175,15 @@ msgstr ""
 #: handlers/commands.py:84
 msgid "commands.process_set_prompt_skip.pack"
 msgstr ""
-"Sticker skipped. Now send a description for the sticker below. If you don't "
-"want to continue adding stickers to this set, send /finish_set"
+"Sticker skipped. Now send a description for the sticker below.\n"
+"If you would like to skip this sticker (not to add it to your set), send /"
+"skip.\n"
+"If you don't want to continue adding stickers to this set, send /finish_set"
 
 #: handlers/commands.py:95
-#, fuzzy
-#| msgid "commands.process_set_prompt_finish.pack"
 msgid "commands.process_set_prompt_skip.finish_set"
 msgstr ""
-"Sticker saved. Now send a description for the sticker below. If you don't "
-"want to continue adding stickers to this set, send /finish_set"
+"There are no more stickers in this sticker pack. Stickers set is saved!"
 
 #: handlers/commands.py:130
 msgid "commands.process_set_prompt_finish.default_saved"
@@ -194,15 +192,15 @@ msgstr "Sticker saved"
 #: handlers/commands.py:133
 msgid "commands.process_set_prompt_finish.pack"
 msgstr ""
-"Sticker saved. Now send a description for the sticker below. If you don't "
-"want to continue adding stickers to this set, send /finish_set"
+"Sticker saved. Now send a description for the sticker below.\n"
+"If you would like to skip this sticker (not to add it to your set), send /"
+"skip.\n"
+"If you don't want to continue adding stickers to this set, send /finish_set"
 
 #: handlers/commands.py:144
 msgid "commands.process_set_prompt_finish.sticker_saved"
 msgstr ""
 "Sticker saved. Now send another sticker. \n"
-"If you would like to skip this sticker (not to add it to the set), send /"
-"skip.\n"
 "If you don't want to add another sticker to this set, send /finish_set"
 
 #: handlers/commands.py:150

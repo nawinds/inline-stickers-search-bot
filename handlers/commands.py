@@ -54,6 +54,18 @@ async def cmd_help(message: types.Message, i18n: I18nContext) -> None:
                          parse_mode="markdown", disable_web_page_preview=True)
 
 
+@commands.message(Command('en'), StateFilter(None))
+async def cmd_en(message: types.Message, state: FSMContext) -> None:
+    await state.update_data(locale="en")
+    await message.answer("Language set to English")
+
+
+@commands.message(Command('ru'), StateFilter(None))
+async def cmd_ru(message: types.Message, state: FSMContext) -> None:
+    await state.update_data(locale="ru")
+    await message.answer("Язык сменён на русский")
+
+
 @commands.message(Command('new'), StateFilter(None))
 async def cmd_new(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     await state.set_state(NewSetState.sticker)
@@ -97,7 +109,9 @@ async def process_set_prompt_skip(message: types.Message, state: FSMContext, i18
             await send_next_pack_sticker(message, state, pack_stickers)
             return
         await message.answer(i18n.gettext("commands.process_set_prompt_skip.finish_set"))
+        locale = data.get("locale")
         await state.clear()
+        await state.update_data(locale=locale)
 
 
 @commands.message(Command('finish'), NewSetState.prompt)
@@ -130,7 +144,9 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext, i
     session.commit()
     await state.update_data(prompts=[])
     if default_set:
+        locale = data.get("locale")
         await state.clear()
+        await state.update_data(locale=locale)
         await message.answer(i18n.gettext("commands.process_set_prompt_finish.default_saved"))
     else:
         if data.get('set_base_type') == "pack":
@@ -141,7 +157,9 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext, i
                 await send_next_pack_sticker(message, state, pack_stickers)
             else:
                 await message.answer(i18n.gettext("commands.process_set_prompt_skip.finish_set"))
+                locale = data.get("locale")
                 await state.clear()
+                await state.update_data(locale=locale)
             return
         await state.set_state(NewSetState.sticker)
         await message.answer(i18n.gettext("commands.process_set_prompt_finish.sticker_saved"))
@@ -149,13 +167,19 @@ async def process_set_prompt_finish(message: types.Message, state: FSMContext, i
 
 @commands.message(Command('finish_set'), NewSetState.sticker)
 async def cmd_finish_set(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
+    data = await state.get_data()
+    locale = data.get("locale")
     await state.clear()
+    await state.update_data(locale=locale)
     await message.answer(i18n.gettext("commands.finish_set"))
 
 
 @commands.message(Command('cancel'), StateFilter(NewSetState))
 async def cmd_cancel(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
+    data = await state.get_data()
+    locale = data.get("locale")
     await state.clear()
+    await state.update_data(locale=locale)
     await message.reply(i18n.gettext("commands.cancel"))
 
 
