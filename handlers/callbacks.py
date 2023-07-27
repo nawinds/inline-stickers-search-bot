@@ -1,15 +1,13 @@
-from aiogram import Router
-from aiogram import types, F
+from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_i18n import I18nContext
 
-from models.db_session import create_session
-from models.set_links import SetLink, generate_code
-from models.sticker_sets import StickerSet
-from models.user_sets import UserSet
-from instances import bot
-from instances import escape_md
+from db_models.db_session import create_session
+from db_models.set_links import SetLink, generate_code
+from db_models.sticker_sets import StickerSet
+from db_models.user_sets import UserSet
+from modules.instances import bot, escape_md
 
 callbacks = Router()
 callbacks.message.filter(F.chat.type == "private")

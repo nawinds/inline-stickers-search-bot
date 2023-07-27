@@ -4,12 +4,12 @@ import logging
 from aiogram_i18n import I18nMiddleware
 from aiogram_i18n.cores.babel_core import BabelCore
 
-from models.db_session import global_init, dictionary_init
+from db_models.db_session import global_init, dictionary_init
 from handlers.callbacks import callbacks
 from handlers.commands import commands
 from handlers.data_processing import data_processing
 from handlers.inline import inline
-from instances import bot, dp, CustomFSMManager
+from modules.instances import bot, dp, CustomFSMManager
 
 
 async def main() -> None:

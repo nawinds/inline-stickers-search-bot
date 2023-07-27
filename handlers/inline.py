@@ -6,7 +6,7 @@ from aiogram.filters import StateFilter
 from aiogram.types import InlineQuery, InlineQueryResultCachedSticker, ChosenInlineResult
 from aiogram_i18n import I18nContext
 
-from search import Search
+from modules.search import Search
 
 inline = Router()
 I18nContext.gettext = I18nContext.get

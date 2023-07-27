@@ -1,17 +1,15 @@
-from aiogram import Router
-from aiogram import types, F
+from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram_i18n import I18nContext
 
-from models.db_session import create_session
-from models.sticker_sets import StickerSet
-from models.user_sets import UserSet
+from db_models.db_session import create_session
+from db_models.sticker_sets import StickerSet
+from db_models.user_sets import UserSet
 from handlers.commands import send_next_pack_sticker
-from instances import NewSetState
-from instances import bot
-from search import clear_q
+from modules.instances import NewSetState, bot
+from modules.search import clear_q
 
 data_processing = Router()
 data_processing.message.filter(F.chat.type == "private")

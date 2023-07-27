@@ -4,9 +4,9 @@ from difflib import SequenceMatcher
 import numpy as np
 from pyxdameraulevenshtein import normalized_damerau_levenshtein_distance_seqs
 
-from models.db_session import create_session
-from models.search_data import SearchData
-from models.user_sets import UserSet
+from db_models.db_session import create_session
+from db_models.search_data import SearchData
+from db_models.user_sets import UserSet
 
 
 def summed_dict(lst: list) -> dict:
