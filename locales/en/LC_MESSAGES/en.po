@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
-"POT-Creation-Date: 2023-07-26 12:14+0300\n"
-"PO-Revision-Date: 2023-07-26 12:26+0300\n"
+"POT-Creation-Date: 2023-07-27 15:33+0300\n"
+"PO-Revision-Date: 2023-07-27 15:41+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: en\n"
@@ -12,50 +12,48 @@ msgstr ""
 "X-Generator: Poedit 3.3.2\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: i18n.get(%)\n"
-"X-Poedit-SearchPath-0: data\n"
-"X-Poedit-SearchPath-1: handlers\n"
-"X-Poedit-SearchPath-2: instances.py\n"
-"X-Poedit-SearchPath-3: main.py\n"
-"X-Poedit-SearchPath-4: search.py\n"
+"X-Poedit-SearchPath-0: handlers\n"
+"X-Poedit-SearchPath-1: main.py\n"
+"X-Poedit-SearchPath-2: db_models\n"
+"X-Poedit-SearchPath-3: modules\n"
 
-#: handlers/callbacks.py:25
+#: handlers/callbacks.py:22
 msgid "callbacks.add_set.cancelled"
-msgstr ""
-"There are no more stickers in this sticker pack. Your set is now saved!"
+msgstr "Set adding cancelled"
 
-#: handlers/callbacks.py:32 handlers/callbacks.py:59
+#: handlers/callbacks.py:29 handlers/callbacks.py:56
 msgid "callbacks.global.set_not_found"
 msgstr "Sorry, this set no longer exists"
 
-#: handlers/callbacks.py:36
+#: handlers/callbacks.py:33
 msgid "callbacks.add_set.already_added"
 msgstr "This set is already added to your account"
 
-#: handlers/callbacks.py:39
+#: handlers/callbacks.py:36
 msgid "callbacks.add_set.adding"
 msgstr "Adding set..."
 
-#: handlers/callbacks.py:46
+#: handlers/callbacks.py:43
 msgid "callbacks.add_set.notification"
 msgstr "Your *{title}* set was added by someone"
 
-#: handlers/callbacks.py:48
+#: handlers/callbacks.py:45
 msgid "callbacks.add_set.added"
 msgstr "Set was added successfully!"
 
-#: handlers/callbacks.py:74 handlers/callbacks.py:102
+#: handlers/callbacks.py:71 handlers/callbacks.py:99
 msgid "callbacks.global.disable"
 msgstr "Turn off"
 
-#: handlers/callbacks.py:76 handlers/callbacks.py:102
+#: handlers/callbacks.py:73 handlers/callbacks.py:99
 msgid "callbacks.global.enable"
 msgstr "Turn on"
 
-#: handlers/callbacks.py:77 handlers/callbacks.py:103
+#: handlers/callbacks.py:74 handlers/callbacks.py:100
 msgid "callbacks.global.notifications"
 msgstr " notifications"
 
-#: handlers/callbacks.py:82
+#: handlers/callbacks.py:79
 msgid "callbacks.share_set.link_text"
 msgstr ""
 "Here is a link for adding the {title} set. You can now share it with your "
@@ -66,42 +64,42 @@ msgstr ""
 "*You can receive notifications when someone adds your set. To enable/disable "
 "them, just tap the button below*"
 
-#: handlers/callbacks.py:94
+#: handlers/callbacks.py:91
 msgid "callbacks.notifications.link_not_found"
 msgstr "Sorry, this link no longer exists"
 
-#: handlers/callbacks.py:109 handlers/callbacks.py:111
+#: handlers/callbacks.py:106 handlers/callbacks.py:108
 msgid "callbacks.notifications.notifications_capitalized"
 msgstr "Notifications "
 
-#: handlers/callbacks.py:110
+#: handlers/callbacks.py:107
 msgid "callbacks.notifications.enabed"
 msgstr "enabled"
 
-#: handlers/callbacks.py:111
+#: handlers/callbacks.py:108
 msgid "callbacks.notifications.disabed"
 msgstr "disabled"
 
-#: handlers/commands.py:29
+#: handlers/commands.py:28
 msgid "commands.start_deep.not_found"
 msgstr ""
 "You used a link to add a new set, but the specified link does not exist"
 
-#: handlers/commands.py:33
+#: handlers/commands.py:32
 msgid "commands.start_deep.yes"
 msgstr "Yes, add this set"
 
-#: handlers/commands.py:35
+#: handlers/commands.py:34
 msgid "commands.start_deep.no"
 msgstr "No, thanks"
 
-#: handlers/commands.py:41
+#: handlers/commands.py:40
 msgid "commands.start_deep.reply_text"
 msgstr ""
 "You used a link to add a *{link_set_title}* set. Are you sure you want to "
 "continue?"
 
-#: handlers/commands.py:48
+#: handlers/commands.py:47
 msgid "commands.start.hello_text"
 msgstr ""
 "Hi!\n"
@@ -130,13 +128,14 @@ msgstr ""
 "will appear above if there are any.\n"
 "\n"
 "*/help — all available bot commands.*\n"
+"*/ru — переключить язык на русский.*\n"
 "\n"
 "_If you have any questions or suggestions, feel free to contact @nawinds!_\n"
 "\n"
 "[Source code of this bot](https://github.com/nawinds/inline-stickers-search-"
 "bot)"
 
-#: handlers/commands.py:54
+#: handlers/commands.py:53
 msgid "commands.help.help_text"
 msgstr ""
 "Here is a list of available bot commands:\n"
@@ -149,86 +148,90 @@ msgstr ""
 "stickers from the sticker pack one by one).\n"
 "/share — create a link for sharing a sticker set.\n"
 "/help — all available bot commands.\n"
+"/ru — переключить язык на русский.\n"
 "\n"
 "_If you have any questions or suggestions, feel free to contact @nawinds!_\n"
 "\n"
 "[Source code of this bot](https://github.com/nawinds/inline-stickers-search-"
 "bot)"
 
-#: handlers/commands.py:61
+#: handlers/commands.py:72
 msgid "commands.new"
 msgstr ""
 "Please send a sticker to add it to search results.\n"
 "_To cancel adding a sticker, send /cancel_"
 
-#: handlers/commands.py:68
+#: handlers/commands.py:79
 msgid "commands.set"
 msgstr ""
 "Please send a title for the new set.\n"
 "_To cancel creating the set, send /cancel_"
 
-#: handlers/commands.py:76
+#: handlers/commands.py:87
 msgid "commands.pack"
 msgstr ""
 "Please send one sticker from the sticker pack you would like to add.\n"
 "_To cancel creating the set, send /cancel_"
 
-#: handlers/commands.py:84
+#: handlers/commands.py:108
 msgid "commands.process_set_prompt_skip.pack"
 msgstr ""
-"Sticker skipped. Now send a description for the sticker below. If you don't "
-"want to continue adding stickers to this set, send /finish_set"
+"Sticker skipped. Now send a description for the sticker below.\n"
+"If you would like to skip this sticker (not to add it to your set), send /"
+"skip.\n"
+"If you don't want to continue adding stickers to this set, send /finish_set"
 
-#: handlers/commands.py:95
-#, fuzzy
-#| msgid "commands.process_set_prompt_finish.pack"
+#: handlers/commands.py:111 handlers/commands.py:159
 msgid "commands.process_set_prompt_skip.finish_set"
 msgstr ""
-"Sticker saved. Now send a description for the sticker below. If you don't "
-"want to continue adding stickers to this set, send /finish_set"
+"There are no more stickers in this sticker pack. Stickers set is saved!"
 
-#: handlers/commands.py:130
+#: handlers/commands.py:150
 msgid "commands.process_set_prompt_finish.default_saved"
 msgstr "Sticker saved"
 
-#: handlers/commands.py:133
+#: handlers/commands.py:156
 msgid "commands.process_set_prompt_finish.pack"
 msgstr ""
-"Sticker saved. Now send a description for the sticker below. If you don't "
-"want to continue adding stickers to this set, send /finish_set"
+"Sticker saved. Now send a description for the sticker below.\n"
+"If you would like to skip this sticker (not to add it to your set), send /"
+"skip.\n"
+"If you don't want to continue adding stickers to this set, send /finish_set"
 
-#: handlers/commands.py:144
+#: handlers/commands.py:165
 msgid "commands.process_set_prompt_finish.sticker_saved"
 msgstr ""
 "Sticker saved. Now send another sticker. \n"
-"If you would like to skip this sticker (not to add it to the set), send /"
-"skip.\n"
 "If you don't want to add another sticker to this set, send /finish_set"
 
-#: handlers/commands.py:150
+#: handlers/commands.py:174
 msgid "commands.finish_set"
 msgstr "Ok. Your set is now saved"
 
-#: handlers/commands.py:156
+#: handlers/commands.py:183
 msgid "commands.cancel"
 msgstr "Action cancelled"
 
-#: handlers/commands.py:170
+#: handlers/commands.py:197
 msgid "commands.share.no_sets"
 msgstr ""
 "You don't have sticker sets that you can share. Create one with /set command"
 
-#: handlers/commands.py:172
+#: handlers/commands.py:199
 msgid "commands.share.choose"
 msgstr ""
 "Please choose a sticker set you would like to share and I will generate a "
 "link"
 
-#: handlers/data_processing.py:22
+#: handlers/data_processing.py:21
 msgid "data_processing.set_title.limit"
 msgstr "This title exceeds 50 characters. Please, try again"
 
-#: handlers/data_processing.py:33
+#: handlers/data_processing.py:26
+msgid "data_processing.set_title.existing"
+msgstr "A set with this title already exists. Please, try again"
+
+#: handlers/data_processing.py:36
 msgid "data_processing.set_title.pack"
 msgstr ""
 "Sticker set created! Now I will start sending stickers from the sticker pack "
