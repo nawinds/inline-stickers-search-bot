@@ -1,16 +1,13 @@
-
-from aiogram import Router
-from aiogram import types, F
+from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_i18n import I18nContext
 
-from data.db_session import create_session
-from data.set_links import SetLink, generate_code
-from data.sticker_sets import StickerSet
-from data.user_sets import UserSet
-from instances import bot
-from instances import escape_md
+from db_models.db_session import create_session
+from db_models.set_links import SetLink, generate_code
+from db_models.sticker_sets import StickerSet
+from db_models.user_sets import UserSet
+from modules.instances import bot, escape_md
 
 callbacks = Router()
 callbacks.message.filter(F.chat.type == "private")
@@ -18,7 +15,7 @@ I18nContext.gettext = I18nContext.get
 
 
 @callbacks.callback_query(lambda c: c.data.startswith("add_set-"), StateFilter("*"))
-async def add_set(callback: types.CallbackQuery, i18n: I18nContext):
+async def add_set(callback: types.CallbackQuery, i18n: I18nContext) -> None:
     await callback.message.edit_reply_markup()
     set_id = int(callback.data.split("-")[1].split(",")[0])
     if set_id == 0:
@@ -50,7 +47,7 @@ async def add_set(callback: types.CallbackQuery, i18n: I18nContext):
 
 
 @callbacks.callback_query(lambda c: c.data.startswith("share_set-"), StateFilter("*"))
-async def share_set(callback: types.CallbackQuery, i18n: I18nContext):
+async def share_set(callback: types.CallbackQuery, i18n: I18nContext) -> None:
     set_id = int(callback.data.split("-")[1])
     await callback.message.edit_reply_markup()
     session = create_session()
@@ -86,7 +83,7 @@ async def share_set(callback: types.CallbackQuery, i18n: I18nContext):
                            parse_mode="markdown", disable_web_page_preview=True)
 
 
-async def notifications_toggle(callback: types.CallbackQuery, i18n: I18nContext, enable: bool):
+async def notifications_toggle(callback: types.CallbackQuery, i18n: I18nContext, enable: bool) -> None:
     link_code = callback.data.split("-")[1]
     session = create_session()
     link = session.query(SetLink).filter(SetLink.code == link_code).first()
@@ -113,10 +110,10 @@ async def notifications_toggle(callback: types.CallbackQuery, i18n: I18nContext,
 
 
 @callbacks.callback_query(lambda c: c.data.startswith("notifications_on-"), StateFilter("*"))
-async def notifications_on_for_set(callback: types.CallbackQuery, i18n: I18nContext):
+async def notifications_on_for_set(callback: types.CallbackQuery, i18n: I18nContext) -> None:
     await notifications_toggle(callback, i18n, True)
 
 
 @callbacks.callback_query(lambda c: c.data.startswith("notifications_off-"), StateFilter("*"))
-async def notifications_off_for_set(callback: types.CallbackQuery, i18n: I18nContext):
+async def notifications_off_for_set(callback: types.CallbackQuery, i18n: I18nContext) -> None:
     await notifications_toggle(callback, i18n, False)

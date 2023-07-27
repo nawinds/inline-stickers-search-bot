@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy.orm import relationship
 
-from data.db_session import SqlAlchemyBase
+from db_models.db_session import SqlAlchemyBase
 
 
 class SearchData(SqlAlchemyBase):

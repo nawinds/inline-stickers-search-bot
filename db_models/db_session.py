@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import sqlalchemy as sa
 import sqlalchemy.ext.declarative as dec
 import sqlalchemy.orm as orm
@@ -8,7 +11,7 @@ SqlAlchemyBase = dec.declarative_base()
 __factory = None
 
 
-def global_init(db_file):
+def global_init(db_file: str) -> None:
     global __factory
 
     if __factory:
@@ -23,10 +26,15 @@ def global_init(db_file):
     engine = sa.create_engine(conn_str, echo=False, pool_size=20, max_overflow=-1)
     __factory = orm.sessionmaker(bind=engine)
 
-    from data import __all_models
     SqlAlchemyBase.metadata.create_all(engine)
 
 
 def create_session() -> Session:
     global __factory
     return __factory()
+
+
+def dictionary_init(path: str, file: str) -> None:
+    Path(path).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(path + "/" + file):
+        open(path + "/" + file, "w", encoding="utf-8")
