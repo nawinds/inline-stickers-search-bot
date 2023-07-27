@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import sqlalchemy as sa
 import sqlalchemy.ext.declarative as dec
@@ -33,6 +34,7 @@ def create_session() -> Session:
     return __factory()
 
 
-def dictionary_init(path: str) -> None:
-    if not os.path.exists(path):
-        open(path, "w", encoding="utf-8")
+def dictionary_init(path: str, file: str) -> None:
+    Path(path).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(path + "/" + file):
+        open(path + "/" + file, "w", encoding="utf-8")

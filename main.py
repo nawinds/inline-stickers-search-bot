@@ -29,6 +29,6 @@ async def main() -> None:
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    dictionary_init("data", "dictionary.txt")
     global_init("data/main.db")
-    dictionary_init("data/dictionary.txt")
     asyncio.run(main())
