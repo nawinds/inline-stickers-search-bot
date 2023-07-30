@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Inline stickers bot\n"
-"POT-Creation-Date: 2023-07-27 15:33+0300\n"
-"PO-Revision-Date: 2023-07-27 15:41+0300\n"
+"POT-Creation-Date: 2023-07-30 22:16+0300\n"
+"PO-Revision-Date: 2023-07-30 22:20+0300\n"
 "Last-Translator: Nikita Aksenov <me@nawinds.top>\n"
 "Language-Team: Nikita Aksenov\n"
 "Language: ru\n"
@@ -262,6 +262,13 @@ msgid "data_processing.set_prompt.success"
 msgstr ""
 "Отправьте еще одно описание для этого стикера. Если Вы не хотите добавлять "
 "больше описаний для стикера, воспользуйтесь командой /finish"
+
+#: handlers/default.py:10
+msgid "default_handler"
+msgstr ""
+"Простите, не совсем понял Вашу команду. Пожалуйста, действуйте в "
+"соответствии с инструкциями, отправляемыми ботом. Чтобы посмотреть список "
+"основных команд бота, отправьте /help"
 
 #: handlers/inline.py:34
 msgid "inline.handle.not_found"

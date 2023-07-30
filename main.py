@@ -9,6 +9,7 @@ from handlers.callbacks import callbacks
 from handlers.commands import commands
 from handlers.data_processing import data_processing
 from handlers.inline import inline
+from handlers.default import default
 from modules.instances import bot, dp, CustomFSMManager, PRODUCTION
 from db_models.sticker_sets import StickerSet
 
@@ -38,6 +39,7 @@ async def main() -> None:
     dp.include_router(callbacks)
     dp.include_router(inline)
     dp.include_router(data_processing)
+    dp.include_router(default)
 
     i18n.setup(dispatcher=dp)
     await dp.start_polling(bot)

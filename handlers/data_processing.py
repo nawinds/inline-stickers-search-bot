@@ -15,7 +15,7 @@ data_processing = Router()
 data_processing.message.filter(F.chat.type == "private")
 
 
-@data_processing.message(StateFilter(NewSetState.title))
+@data_processing.message(StateFilter(NewSetState.title), F.content_type == "text")
 async def set_title(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     if len(message.text) > 50:
         await message.reply(i18n.gettext("data_processing.set_title.limit"))
@@ -66,7 +66,7 @@ async def set_sticker(message: types.Message, state: FSMContext, i18n: I18nConte
     await message.answer(i18n.gettext("data_processing.set_sticker"))
 
 
-@data_processing.message(StateFilter(NewSetState.prompt))
+@data_processing.message(StateFilter(NewSetState.prompt), F.content_type == "text")
 async def set_prompt(message: types.Message, state: FSMContext, i18n: I18nContext) -> None:
     if len(message.text) > 1000:
         await message.reply(i18n.gettext("data_processing.set_prompt.limit"))
